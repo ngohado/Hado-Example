@@ -30,6 +30,10 @@ ext {
     minSdkVersion = 15
     compileSdkVersion = 26
     targetSdkVersion = 26
+
+    recyclerview = "com.android.support:recyclerview-v7:" + androidSupportVersion
+    butterknife = "com.jakewharton:butterknife:8.7.0"
+    butterknifeCompiler = "com.jakewharton:butterknife-compiler:8.7.0"
 }
 
 task clean(type: Delete) {
