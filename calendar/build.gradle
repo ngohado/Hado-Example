@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+
 android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -33,6 +34,8 @@ dependencies {
     implementation rootProject.ext.recyclerview
     implementation rootProject.ext.butterknife
     kapt rootProject.ext.butterknifeCompiler
+
+    compile 'joda-time:joda-time:2.9.9'
 
     //test
     testImplementation 'junit:junit:4.12'
