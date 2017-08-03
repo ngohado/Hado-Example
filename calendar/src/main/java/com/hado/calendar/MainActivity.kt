@@ -11,6 +11,8 @@ class MainActivity : AppCompatActivity() {
     @BindView(R.id.rv_calendar)
     lateinit var rvCalendar: RecyclerView
 
+    lateinit var adapter: WeeksAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

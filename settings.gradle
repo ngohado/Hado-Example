@@ -1,1 +1,1 @@
-include ':calendar', ':calendargoogle'
+include ':calendar', ':calendargoogle', ':switch'

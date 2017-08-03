@@ -37,14 +37,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Locale;
 
-/**
- * <p>
- * This is a dynamic view for drawing a single week. It can be configured to
- * display the week number, start the week on a given day, or show a reduced
- * number of days. It is intended for use as a single view within a ListView.
- * See {@link SimpleWeeksAdapter} for usage.
- * </p>
- */
+
 public class SimpleWeekView extends View {
     private static final String TAG = "MonthView";
 
@@ -61,10 +54,7 @@ public class SimpleWeekView extends View {
      * This sets the height of this week in pixels
      */
     public static final String VIEW_PARAMS_HEIGHT = "height";
-    /**
-     * This specifies the position (or weeks since the epoch) of this week,
-     * calculated using {@link Utils#getWeeksSinceEpochFromJulianDay}
-     */
+
     public static final String VIEW_PARAMS_WEEK = "week";
     /**
      * This sets one of the days in this view as selected {@link Time#SUNDAY}
@@ -95,7 +85,6 @@ public class SimpleWeekView extends View {
     protected static final int DEFAULT_SELECTED_DAY = -1;
     protected static final int DEFAULT_WEEK_START = Time.SUNDAY;
     protected static final int DEFAULT_NUM_DAYS = 7;
-    protected static final int DEFAULT_SHOW_WK_NUM = 0;
     protected static final int DEFAULT_FOCUS_MONTH = -1;
 
     protected static int DAY_SEPARATOR_WIDTH = 1;
@@ -241,12 +230,10 @@ public class SimpleWeekView extends View {
         mFocusDay = new boolean[mNumCells];
         mOddMonth = new boolean[mNumCells];
         mWeek = params.get(VIEW_PARAMS_WEEK);
+
         int julianMonday = getJulianMondayFromWeeksSinceEpoch(mWeek);
         Time time = new Time(tz);
         time.setJulianDay(julianMonday);
-
-        // If we're showing the week number calculate it based on Monday
-        int i = 0;
 
         if (params.containsKey(VIEW_PARAMS_WEEK_START)) {
             mWeekStart = params.get(VIEW_PARAMS_WEEK_START);
@@ -277,7 +264,7 @@ public class SimpleWeekView extends View {
                 VIEW_PARAMS_FOCUS_MONTH)
                 : DEFAULT_FOCUS_MONTH;
 
-        for (; i < mNumCells; i++) {
+        for (int i = 0; i < mNumCells; i++) {
             if (time.monthDay == 1) {
                 mFirstMonth = time.month;
             }
