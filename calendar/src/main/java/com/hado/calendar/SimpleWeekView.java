@@ -89,7 +89,6 @@ public class SimpleWeekView extends View {
     /**
      * If this month should display week numbers. false if 0, true otherwise.
      */
-    public static final String VIEW_PARAMS_SHOW_WK_NUM = "show_wk_num";
 
     protected static int DEFAULT_HEIGHT = 32;
     protected static int MIN_HEIGHT = 10;
@@ -137,8 +136,6 @@ public class SimpleWeekView extends View {
     protected int mWidth;
     // The height this view should draw at in pixels, set by height param
     protected int mHeight = DEFAULT_HEIGHT;
-    // Whether the week number should be shown
-    protected boolean mShowWeekNum = false;
     // If this view contains the selected day
     protected boolean mHasSelectedDay = false;
     // If this view contains the today
@@ -236,14 +233,8 @@ public class SimpleWeekView extends View {
         if (params.containsKey(VIEW_PARAMS_NUM_DAYS)) {
             mNumDays = params.get(VIEW_PARAMS_NUM_DAYS);
         }
-        if (params.containsKey(VIEW_PARAMS_SHOW_WK_NUM)) {
-            if (params.get(VIEW_PARAMS_SHOW_WK_NUM) != 0) {
-                mShowWeekNum = true;
-            } else {
-                mShowWeekNum = false;
-            }
-        }
-        mNumCells = mShowWeekNum ? mNumDays + 1 : mNumDays;
+
+        mNumCells = mNumDays;
 
         // Allocate space for caching the day numbers and focus values
         mDayNumbers = new String[mNumCells];
@@ -256,10 +247,6 @@ public class SimpleWeekView extends View {
 
         // If we're showing the week number calculate it based on Monday
         int i = 0;
-        if (mShowWeekNum) {
-            mDayNumbers[0] = Integer.toString(time.getWeekNumber());
-            i++;
-        }
 
         if (params.containsKey(VIEW_PARAMS_WEEK_START)) {
             mWeekStart = params.get(VIEW_PARAMS_WEEK_START);
@@ -373,7 +360,7 @@ public class SimpleWeekView extends View {
      * in a day
      */
     public Time getDayFromLocation(float x) {
-        int dayStart = mShowWeekNum ? (mWidth - mPadding * 2) / mNumCells + mPadding : mPadding;
+        int dayStart = mPadding;
         if (x < dayStart || x > mWidth - mPadding) {
             return null;
         }
@@ -439,16 +426,6 @@ public class SimpleWeekView extends View {
 
         int i = 0;
         int divisor = 2 * nDays;
-        if (mShowWeekNum) {
-            p.setTextSize(MINI_WK_NUMBER_TEXT_SIZE);
-            p.setStyle(Style.FILL);
-            p.setTextAlign(Align.CENTER);
-            p.setAntiAlias(true);
-            p.setColor(mWeekNumColor);
-            int x = (mWidth - mPadding * 2) / divisor + mPadding;
-            canvas.drawText(mDayNumbers[0], x, y, p);
-            i++;
-        }
 
         boolean isFocusMonth = mFocusDay[i];
         mMonthNumPaint.setColor(isFocusMonth ? mFocusMonthColor : mOtherMonthColor);
@@ -488,13 +465,6 @@ public class SimpleWeekView extends View {
             p.setColor(mTodayOutlineColor);
             canvas.drawRect(r, p);
         }
-        if (mShowWeekNum) {
-            p.setColor(mDaySeparatorColor);
-            p.setStrokeWidth(DAY_SEPARATOR_WIDTH);
-
-            int x = (mWidth - mPadding * 2) / mNumCells + mPadding;
-            canvas.drawLine(x, 0, x, mHeight, p);
-        }
     }
 
     @Override
@@ -511,9 +481,6 @@ public class SimpleWeekView extends View {
             int selectedPosition = mSelectedDay - mWeekStart;
             if (selectedPosition < 0) {
                 selectedPosition += 7;
-            }
-            if (mShowWeekNum) {
-                selectedPosition++;
             }
             mSelectedLeft = selectedPosition * (mWidth - mPadding * 2) / mNumCells
                     + mPadding;
