@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,6 +19,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ButterKnife.bind(this)
         val currentWeek = TimeUtils.getWeekSinceJulianDay()
-        println(TimeUtils.getDaysOfWeek(currentWeek - 1, currentWeek))
+        val weekParams = HashMap<String, Int>()
+        weekParams.put(WeeksAdapter.WEEK_PARAMS_SHOW_WEEK, currentWeek)
+        weekParams.put(WeeksAdapter.WEEK_PARAMS_WEEK_START, 0)
+        adapter = WeeksAdapter(this, weekParams)
+        rvCalendar.adapter = adapter
     }
 }

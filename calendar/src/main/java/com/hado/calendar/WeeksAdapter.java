@@ -15,11 +15,6 @@ import java.util.HashMap;
  */
 
 public class WeeksAdapter extends RecyclerView.Adapter<SimpleWeekViewHolder> {
-
-    /**
-     * The number of weeks to display at a time.
-     */
-    public static final String WEEK_PARAMS_NUM_WEEKS = "num_weeks";
     /**
      * Which month should be in focus currently.
      */
@@ -37,18 +32,11 @@ public class WeeksAdapter extends RecyclerView.Adapter<SimpleWeekViewHolder> {
      * The Julian day to highlight as selected.
      */
     public static final String WEEK_PARAMS_JULIAN_DAY = "selected_day";
-    /**
-     * How many days of the week to display [1-7].
-     */
-    public static final String WEEK_PARAMS_DAYS_PER_WEEK = "days_per_week";
 
 
     private static final int WEEK_COUNT = 3497;
-    private static int DEFAULT_NUM_WEEKS = 6;
+
     private static int DEFAULT_MONTH_FOCUS = 0;
-    private static int DEFAULT_DAYS_PER_WEEK = 7;
-    private static int DEFAULT_WEEK_HEIGHT = 32;
-    private static int WEEK_7_OVERHANG_HEIGHT = 7;
 
     private static float mScale = 0;
 
@@ -62,10 +50,6 @@ public class WeeksAdapter extends RecyclerView.Adapter<SimpleWeekViewHolder> {
 
     // When the week starts; numbered like Time.<WEEKDAY> (e.g. SUNDAY=0).
     private int mFirstDayOfWeek;
-
-    private int mNumWeeks = DEFAULT_NUM_WEEKS;
-
-    private int mDaysPerWeek = DEFAULT_DAYS_PER_WEEK;
 
     private int mFocusMonth = DEFAULT_MONTH_FOCUS;
 
@@ -94,15 +78,14 @@ public class WeeksAdapter extends RecyclerView.Adapter<SimpleWeekViewHolder> {
         HashMap<String, Integer> drawingParams = holder.getDrawingParams();
 
         int selectedDay = -1;
+
         if (mSelectedWeek == position) {
             selectedDay = calendar.get(Calendar.DAY_OF_WEEK);
         }
 
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_HEIGHT,
-                (holder.itemView.getHeight() - WEEK_7_OVERHANG_HEIGHT) / mNumWeeks);
+        drawingParams.put(SimpleWeekView.VIEW_PARAMS_HEIGHT, 250);
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_SELECTED_DAY, selectedDay);
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK_START, mFirstDayOfWeek);
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_NUM_DAYS, mDaysPerWeek);
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK, position);
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_FOCUS_MONTH, mFocusMonth);
 
@@ -123,18 +106,13 @@ public class WeeksAdapter extends RecyclerView.Adapter<SimpleWeekViewHolder> {
         if (params.containsKey(WEEK_PARAMS_FOCUS_MONTH)) {
             mFocusMonth = params.get(WEEK_PARAMS_FOCUS_MONTH);
         }
-        if (params.containsKey(WEEK_PARAMS_FOCUS_MONTH)) {
-            mNumWeeks = params.get(WEEK_PARAMS_NUM_WEEKS);
-        }
         if (params.containsKey(WEEK_PARAMS_WEEK_START)) {
             mFirstDayOfWeek = params.get(WEEK_PARAMS_WEEK_START);
         }
-        if (params.containsKey(WEEK_PARAMS_JULIAN_DAY)) {
-            mSelectedWeek = TimeUtils.INSTANCE.getWeekSinceJulianDay(true);
+        if (params.containsKey(WEEK_PARAMS_SHOW_WEEK)) {
+            mSelectedWeek = params.get(WEEK_PARAMS_SHOW_WEEK);
         }
-        if (params.containsKey(WEEK_PARAMS_DAYS_PER_WEEK)) {
-            mDaysPerWeek = params.get(WEEK_PARAMS_DAYS_PER_WEEK);
-        }
+
         refresh();
     }
 

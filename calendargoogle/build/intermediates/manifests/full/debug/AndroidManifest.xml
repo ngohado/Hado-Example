@@ -29,6 +29,10 @@
         <provider
             android:name="com.example.calendarview.CalendarProvider"
             android:authorities="com.example.calendarview.calendarprovider" />
+
+        <meta-data
+            android:name="android.support.VERSION"
+            android:value="26.0.0" />
     </application>
 
 </manifest>

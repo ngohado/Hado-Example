@@ -20,8 +20,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -39,17 +40,10 @@ import java.util.Locale;
 
 
 public class SimpleWeekView extends View {
-    private static final String TAG = "MonthView";
-
     public static final int MONDAY_BEFORE_JULIAN_EPOCH = Time.EPOCH_JULIAN_DAY - 3;
     private static StringBuilder mSB = new StringBuilder(50);
     private static Formatter mF = new Formatter(mSB, Locale.getDefault());
 
-    /**
-     * These params can be passed into the view to control how it appears.
-     * {@link #VIEW_PARAMS_WEEK} is the only required field, though the default
-     * values are unlikely to fit most layouts correctly.
-     */
     /**
      * This sets the height of this week in pixels
      */
@@ -66,11 +60,7 @@ public class SimpleWeekView extends View {
      * {@link Time#SATURDAY}.
      */
     public static final String VIEW_PARAMS_WEEK_START = "week_start";
-    /**
-     * How many days to display at a time. Days will be displayed starting with
-     * {@link #mWeekStart}.
-     */
-    public static final String VIEW_PARAMS_NUM_DAYS = "num_days";
+
     /**
      * Which month is currently in focus, as defined by {@link Time#month}
      * [0-11].
@@ -87,13 +77,12 @@ public class SimpleWeekView extends View {
     protected static final int DEFAULT_NUM_DAYS = 7;
     protected static final int DEFAULT_FOCUS_MONTH = -1;
 
+    protected static int DEFAULT_DAY_NUMBER_MARGIN = 10;
+
     protected static int DAY_SEPARATOR_WIDTH = 1;
 
-    protected static int MINI_DAY_NUMBER_TEXT_SIZE = 14;
-    protected static int MINI_WK_NUMBER_TEXT_SIZE = 12;
-    protected static int MINI_TODAY_NUMBER_TEXT_SIZE = 18;
+    protected static int MINI_DAY_NUMBER_TEXT_SIZE = 10;
     protected static int MINI_TODAY_OUTLINE_WIDTH = 2;
-    protected static int WEEK_NUM_MARGIN_BOTTOM = 4;
 
     // used for scaling to the device density
     protected static float mScale = 0;
@@ -101,9 +90,11 @@ public class SimpleWeekView extends View {
     // affects the padding on the sides of this view
     protected int mPadding = 0;
 
-    protected Rect r = new Rect();
-    protected Paint p = new Paint();
-    protected Paint mMonthNumPaint;
+    protected Rect mSelectedDayRect = new Rect();
+    protected Paint mSelectedDayPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    protected Paint mMonthNumPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    protected Paint mSeparatorVerticalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    protected Paint mSeparatorHorizontalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     protected Drawable mSelectedDayLine;
 
     // Cache the number strings so we don't have to recompute them each time
@@ -121,6 +112,10 @@ public class SimpleWeekView extends View {
     // The position of this week, equivalent to weeks since the week of Jan 1st,
     // 1970
     protected int mWeek = -1;
+    //The margin distance top and left between day's number and day's bounder
+    protected int mDayNumberMargin = DEFAULT_DAY_NUMBER_MARGIN;
+    // The height of day number, it's computed by MINI_DAY_NUMBER_TEXT_SIZE * scale
+    protected int mDayNumberHeight;
     // Quick reference to the width of this view, matches parent
     protected int mWidth;
     // The height this view should draw at in pixels, set by height param
@@ -135,10 +130,8 @@ public class SimpleWeekView extends View {
     protected int mToday = DEFAULT_SELECTED_DAY;
     // Which day of the week to start on [0-6]
     protected int mWeekStart = DEFAULT_WEEK_START;
-    // How many days to display
-    protected int mNumDays = DEFAULT_NUM_DAYS;
     // The number of days + a spot for week number if it is displayed
-    protected int mNumCells = mNumDays;
+    protected int mNumCells = DEFAULT_NUM_DAYS;
     // The left edge of the selected day
     protected int mSelectedLeft = -1;
     // The right edge of the selected day
@@ -149,8 +142,8 @@ public class SimpleWeekView extends View {
 
     protected int mBGColor;
     protected int mSelectedWeekBGColor;
-    protected int mFocusMonthColor;
-    protected int mOtherMonthColor;
+    protected int mFutureDayColor;
+    protected int mPastDayColor;
     protected int mDaySeparatorColor;
     protected int mTodayOutlineColor;
     protected int mWeekNumColor;
@@ -158,12 +151,15 @@ public class SimpleWeekView extends View {
     public SimpleWeekView(Context context) {
         super(context);
 
+        //Use to apply effect line dashed
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
         Resources res = context.getResources();
 
         mBGColor = res.getColor(R.color.month_bgcolor);
         mSelectedWeekBGColor = res.getColor(R.color.month_selected_week_bgcolor);
-        mFocusMonthColor = res.getColor(R.color.month_mini_day_number);
-        mOtherMonthColor = res.getColor(R.color.month_other_month_day_number);
+        mFutureDayColor = res.getColor(R.color.month_mini_day_number);
+        mPastDayColor = res.getColor(R.color.month_other_month_day_number);
         mDaySeparatorColor = res.getColor(R.color.month_grid_lines);
         mTodayOutlineColor = res.getColor(R.color.mini_month_today_outline_color);
         mWeekNumColor = res.getColor(R.color.month_week_num_color);
@@ -175,11 +171,8 @@ public class SimpleWeekView extends View {
                 DEFAULT_HEIGHT *= mScale;
                 MIN_HEIGHT *= mScale;
                 MINI_DAY_NUMBER_TEXT_SIZE *= mScale;
-                MINI_TODAY_NUMBER_TEXT_SIZE *= mScale;
                 MINI_TODAY_OUTLINE_WIDTH *= mScale;
-                WEEK_NUM_MARGIN_BOTTOM *= mScale;
                 DAY_SEPARATOR_WIDTH *= mScale;
-                MINI_WK_NUMBER_TEXT_SIZE *= mScale;
             }
         }
 
@@ -219,11 +212,6 @@ public class SimpleWeekView extends View {
             mSelectedDay = params.get(VIEW_PARAMS_SELECTED_DAY);
         }
         mHasSelectedDay = mSelectedDay != -1;
-        if (params.containsKey(VIEW_PARAMS_NUM_DAYS)) {
-            mNumDays = params.get(VIEW_PARAMS_NUM_DAYS);
-        }
-
-        mNumCells = mNumDays;
 
         // Allocate space for caching the day numbers and focus values
         mDayNumbers = new String[mNumCells];
@@ -268,12 +256,10 @@ public class SimpleWeekView extends View {
             if (time.monthDay == 1) {
                 mFirstMonth = time.month;
             }
+
             mOddMonth[i] = (time.month % 2) == 1;
-            if (time.month == focusMonth) {
-                mFocusDay[i] = true;
-            } else {
-                mFocusDay[i] = false;
-            }
+            mFocusDay[i] = time.month == focusMonth;
+
             if (time.year == today.year && time.yearDay == today.yearDay) {
                 mHasToday = true;
                 mToday = i;
@@ -297,18 +283,27 @@ public class SimpleWeekView extends View {
      * want to use a different paint.
      */
     protected void initView() {
-        p.setFakeBoldText(false);
-        p.setAntiAlias(true);
-        p.setTextSize(MINI_DAY_NUMBER_TEXT_SIZE);
-        p.setStyle(Style.FILL);
+        mSelectedDayPaint.setFakeBoldText(false);
+        mSelectedDayPaint.setTextSize(MINI_DAY_NUMBER_TEXT_SIZE);
+        mSelectedDayPaint.setStyle(Style.FILL);
 
-        mMonthNumPaint = new Paint();
+        mSeparatorVerticalPaint.setStyle(Style.STROKE);
+        mSeparatorVerticalPaint.setStrokeWidth(DAY_SEPARATOR_WIDTH);
+        mSeparatorVerticalPaint.setPathEffect(new DashPathEffect(new float[]{3, 5}, 0));
+        mSeparatorVerticalPaint.setColor(Color.parseColor("#cccccc"));
+
+        mSeparatorHorizontalPaint.setStyle(Style.STROKE);
+        mSeparatorHorizontalPaint.setStrokeWidth(DAY_SEPARATOR_WIDTH);
+        mSeparatorHorizontalPaint.setColor(Color.GRAY);
+
         mMonthNumPaint.setFakeBoldText(true);
-        mMonthNumPaint.setAntiAlias(true);
         mMonthNumPaint.setTextSize(MINI_DAY_NUMBER_TEXT_SIZE);
-        mMonthNumPaint.setColor(mFocusMonthColor);
         mMonthNumPaint.setStyle(Style.FILL);
-        mMonthNumPaint.setTextAlign(Align.CENTER);
+
+        //use to compute the height of number text day
+        Rect rect = new Rect();
+        mMonthNumPaint.getTextBounds("12", 0, 2, rect);
+        mDayNumberHeight = Math.abs(rect.top - rect.bottom);
     }
 
     /**
@@ -352,7 +347,7 @@ public class SimpleWeekView extends View {
             return null;
         }
         // Selection is (x - start) / (pixels/day) == (x -s) * day / pixels
-        int dayPosition = (int) ((x - dayStart) * mNumDays / (mWidth - dayStart - mPadding));
+        int dayPosition = (int) ((x - dayStart) * mNumCells / (mWidth - dayStart - mPadding));
         int day = mFirstJulianDay + dayPosition;
 
         Time time = new Time(mTimeZone);
@@ -373,32 +368,8 @@ public class SimpleWeekView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        drawBackground(canvas);
-        drawWeekNums(canvas);
+        drawDayNumber(canvas);
         drawDaySeparators(canvas);
-    }
-
-    /**
-     * This draws the selection highlight if a day is selected in this week.
-     * Override this method if you wish to have a different background drawn.
-     *
-     * @param canvas The canvas to draw on
-     */
-    protected void drawBackground(Canvas canvas) {
-        if (mHasSelectedDay) {
-            p.setColor(mSelectedWeekBGColor);
-            p.setStyle(Style.FILL);
-        } else {
-            return;
-        }
-        r.top = 1;
-        r.bottom = mHeight - 1;
-        r.left = mPadding;
-        r.right = mSelectedLeft;
-        canvas.drawRect(r, p);
-        r.left = mSelectedRight;
-        r.right = mWidth - mPadding;
-        canvas.drawRect(r, p);
     }
 
     /**
@@ -407,32 +378,24 @@ public class SimpleWeekView extends View {
      *
      * @param canvas The canvas to draw on
      */
-    protected void drawWeekNums(Canvas canvas) {
-        int y = ((mHeight + MINI_DAY_NUMBER_TEXT_SIZE) / 2) - DAY_SEPARATOR_WIDTH;
-        int nDays = mNumCells;
-
-        int i = 0;
-        int divisor = 2 * nDays;
-
-        boolean isFocusMonth = mFocusDay[i];
-        mMonthNumPaint.setColor(isFocusMonth ? mFocusMonthColor : mOtherMonthColor);
-        mMonthNumPaint.setFakeBoldText(false);
-        for (; i < nDays; i++) {
-            if (mFocusDay[i] != isFocusMonth) {
-                isFocusMonth = mFocusDay[i];
-                mMonthNumPaint.setColor(isFocusMonth ? mFocusMonthColor : mOtherMonthColor);
+    protected void drawDayNumber(Canvas canvas) {
+        mMonthNumPaint.setFakeBoldText(true);
+        for (int i = 0; i < mNumCells; i++) {
+            if (mHasToday && i >= mToday) {
+                mMonthNumPaint.setColor(mFutureDayColor);
+            } else {
+                mMonthNumPaint.setColor(mPastDayColor);
             }
-            if (mHasToday && mToday == i) {
-                mMonthNumPaint.setTextSize(MINI_TODAY_NUMBER_TEXT_SIZE);
-                mMonthNumPaint.setFakeBoldText(true);
-            }
-            int x = (2 * i + 1) * (mWidth - mPadding * 2) / (divisor) + mPadding;
+
+            int y = mDayNumberHeight + mDayNumberMargin;
+            int x = i * (mWidth / mNumCells) + mDayNumberMargin;
             canvas.drawText(mDayNumbers[i], x, y, mMonthNumPaint);
-            if (mHasToday && mToday == i) {
-                mMonthNumPaint.setTextSize(MINI_DAY_NUMBER_TEXT_SIZE);
-                mMonthNumPaint.setFakeBoldText(false);
-            }
+
+            if (i == 0) continue;
+
+            canvas.drawLine(i * (mWidth / mNumCells), 0, i * (mWidth / mNumCells), mHeight, mSeparatorVerticalPaint);
         }
+        canvas.drawLine(0f, mHeight, getWidth(), mHeight, mSeparatorHorizontalPaint);
     }
 
     /**
@@ -443,14 +406,14 @@ public class SimpleWeekView extends View {
      */
     protected void drawDaySeparators(Canvas canvas) {
         if (mHasSelectedDay) {
-            r.top = 1;
-            r.bottom = mHeight - 1;
-            r.left = mSelectedLeft + 1;
-            r.right = mSelectedRight - 1;
-            p.setStrokeWidth(MINI_TODAY_OUTLINE_WIDTH);
-            p.setStyle(Style.STROKE);
-            p.setColor(mTodayOutlineColor);
-            canvas.drawRect(r, p);
+            mSelectedDayRect.top = 1;
+            mSelectedDayRect.bottom = mHeight - 1;
+            mSelectedDayRect.left = mSelectedLeft + 1;
+            mSelectedDayRect.right = mSelectedRight - 1;
+            mSelectedDayPaint.setStrokeWidth(MINI_TODAY_OUTLINE_WIDTH);
+            mSelectedDayPaint.setStyle(Style.STROKE);
+            mSelectedDayPaint.setColor(mTodayOutlineColor);
+            canvas.drawRect(mSelectedDayRect, mSelectedDayPaint);
         }
     }
 

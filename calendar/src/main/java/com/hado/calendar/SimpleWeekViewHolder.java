@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class SimpleWeekViewHolder extends RecyclerView.ViewHolder {
 
-    private HashMap<String, Integer> mDrawingParams;
+    private HashMap<String, Integer> mDrawingParams = new HashMap<>();
 
     public SimpleWeekViewHolder(View itemView) {
         super(itemView);
