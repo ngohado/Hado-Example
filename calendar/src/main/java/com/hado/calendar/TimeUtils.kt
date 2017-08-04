@@ -10,11 +10,14 @@ import kotlin.collections.ArrayList
 object TimeUtils {
     fun getWeekSinceJulianDay(firstWeekMonday: Boolean = true): Int = getWeeksSinceEpochFromJulianDay(getJulianDay(), if (firstWeekMonday) 1 else 0)
 
-    fun getDaysOfWeek(week: Int, currentWeek: Int): ArrayList<Date> {
+    fun getDaysOfWeek(week: Int, currentWeek: Int, firstDayOfWeek: Int): ArrayList<Date> {
         val calendar = Calendar.getInstance()
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+
+        calendar.firstDayOfWeek = if (firstDayOfWeek == 0) Calendar.SUNDAY else Calendar.MONDAY
+        calendar.set(Calendar.DAY_OF_WEEK, if (firstDayOfWeek == 0) Calendar.SUNDAY else Calendar.MONDAY)
 
         val betweenNumber = week - currentWeek
+
         calendar.add(Calendar.DAY_OF_MONTH, betweenNumber * Calendar.DAY_OF_WEEK)
         val daysOfWeek = ArrayList<Date>()
 
@@ -44,4 +47,28 @@ object TimeUtils {
         val refDay = Time.EPOCH_JULIAN_DAY - diff
         return (julianDay - refDay) / 7
     }
+
+    fun getDateNumber(date: Date): Int {
+        val calendar = Calendar.getInstance()
+        calendar.time = date
+        return calendar.get(Calendar.DATE)
+    }
+}
+
+fun Date.isSameDay(secondDate: Date): Boolean {
+    val calendar = Calendar.getInstance()
+    calendar.time = this
+
+    val year = calendar.get(Calendar.YEAR)
+    val month = calendar.get(Calendar.MONTH)
+    val date = calendar.get(Calendar.DATE)
+
+    calendar.time = secondDate
+    val secondYear = calendar.get(Calendar.YEAR)
+    val secondMonth = calendar.get(Calendar.MONTH)
+    val secondDate = calendar.get(Calendar.DATE)
+
+    if (year == secondYear && month == secondMonth && date == secondDate) return true
+
+    return false
 }

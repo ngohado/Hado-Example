@@ -44,12 +44,12 @@
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.0.0.aar\\0bbb93400f41e98e29e64216897f1fc8\\res\\layout-v21\\notification_template_icon_group.xml"
     },
     {
-        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi_ic_launcher.png.flat",
-        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\drawable-mdpi\\ic_launcher.png"
-    },
-    {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4_notify_panel_notification_icon_bg.png.flat",
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.0.0.aar\\0bbb93400f41e98e29e64216897f1fc8\\res\\drawable-hdpi-v4\\notify_panel_notification_icon_bg.png"
+    },
+    {
+        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi_ic_launcher.png.flat",
+        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\drawable-mdpi\\ic_launcher.png"
     },
     {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable_notification_bg.xml.flat",
@@ -60,12 +60,12 @@
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.0.0.aar\\0bbb93400f41e98e29e64216897f1fc8\\res\\drawable-hdpi-v4\\notification_bg_normal.9.png"
     },
     {
-        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\anim_slide_left_in.xml.flat",
-        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\anim\\slide_left_in.xml"
-    },
-    {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\anim_slide_right_in.xml.flat",
         "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\anim\\slide_right_in.xml"
+    },
+    {
+        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\anim_slide_left_in.xml.flat",
+        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\anim\\slide_left_in.xml"
     },
     {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_today_blue_week_holo_light.9.png.flat",
@@ -188,32 +188,32 @@
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-media-compat-26.0.0.aar\\2c1d3d51cd979ca566cad0b72c865a52\\res\\layout\\notification_template_lines_media.xml"
     },
     {
-        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-ldpi_ic_launcher.png.flat",
-        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\drawable-ldpi\\ic_launcher.png"
-    },
-    {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi-v4_notification_bg_normal.9.png.flat",
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.0.0.aar\\0bbb93400f41e98e29e64216897f1fc8\\res\\drawable-xhdpi-v4\\notification_bg_normal.9.png"
+    },
+    {
+        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-ldpi_ic_launcher.png.flat",
+        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\drawable-ldpi\\ic_launcher.png"
     },
     {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\layout_notification_template_part_time.xml.flat",
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.0.0.aar\\0bbb93400f41e98e29e64216897f1fc8\\res\\layout\\notification_template_part_time.xml"
     },
     {
-        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_panel_month_event_holo_light.9.png.flat",
-        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\drawable-hdpi\\panel_month_event_holo_light.9.png"
-    },
-    {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi-v4_notification_bg_normal_pressed.9.png.flat",
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.0.0.aar\\0bbb93400f41e98e29e64216897f1fc8\\res\\drawable-mdpi-v4\\notification_bg_normal_pressed.9.png"
     },
     {
-        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\layout_full_month_header.xml.flat",
-        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\layout\\full_month_header.xml"
+        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_panel_month_event_holo_light.9.png.flat",
+        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\drawable-hdpi\\panel_month_event_holo_light.9.png"
     },
     {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi-v4_notification_bg_low_pressed.9.png.flat",
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.0.0.aar\\0bbb93400f41e98e29e64216897f1fc8\\res\\drawable-xhdpi-v4\\notification_bg_low_pressed.9.png"
+    },
+    {
+        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\layout_full_month_header.xml.flat",
+        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\layout\\full_month_header.xml"
     },
     {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_timeline_indicator_activated_holo_light.9.png.flat",
@@ -236,12 +236,12 @@
         "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\drawable-xhdpi\\ic_launcher.png"
     },
     {
-        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\layout_full_month_by_week.xml.flat",
-        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\layout\\full_month_by_week.xml"
-    },
-    {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\layout-v21_notification_template_custom_big.xml.flat",
         "source": "C:\\Users\\Ominext\\.gradle\\caches\\transforms-1\\files-1.1\\support-compat-26.0.0.aar\\0bbb93400f41e98e29e64216897f1fc8\\res\\layout-v21\\notification_template_custom_big.xml"
+    },
+    {
+        "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\layout_full_month_by_week.xml.flat",
+        "source": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\src\\main\\res\\layout\\full_month_by_week.xml"
     },
     {
         "merged": "F:\\Doan's data\\Android\\MyProject\\HadoExample\\calendargoogle\\build\\intermediates\\res\\merged\\debug\\layout-v21_notification_action_tombstone.xml.flat",
