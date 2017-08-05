@@ -54,7 +54,7 @@ object TimeUtils {
         calendar.time = date
         val dateNumber = calendar.get(Calendar.DATE)
         if (dateNumber == 1) {
-            return SimpleDateFormat("MMM d").format(date)
+            return SimpleDateFormat("MMM d").format(date) //TODO: move string format to strings.xml to become flexible in difference language
         }
         return dateNumber.toString()
     }
