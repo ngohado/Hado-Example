@@ -49,10 +49,11 @@ object TimeUtils {
         return (julianDay - refDay) / 7
     }
 
-    fun getDateNumber(date: Date): String {
-        val calendar = Calendar.getInstance()
+    fun getDateNumber(calendar: Calendar, date: Date): String {
+        val backupTime = calendar.time //need backup time because the calendar is changed time, and we want to keep it as it came
         calendar.time = date
         val dateNumber = calendar.get(Calendar.DATE)
+        calendar.time = backupTime
         if (dateNumber == 1) {
             return SimpleDateFormat("MMM d").format(date) //TODO: move string format to strings.xml to become flexible in difference language
         }
@@ -60,8 +61,8 @@ object TimeUtils {
     }
 }
 
-fun Date.isSameDay(secondDate: Date): Boolean {
-    val calendar = Calendar.getInstance()
+fun Date.isSameDay(calendar: Calendar, secondDate: Date): Boolean {
+    val backupTime = calendar.time //need backup time because the calendar is changed time, and we want to keep it as it came
     calendar.time = this
 
     val year = calendar.get(Calendar.YEAR)
@@ -73,6 +74,7 @@ fun Date.isSameDay(secondDate: Date): Boolean {
     val secondMonth = calendar.get(Calendar.MONTH)
     val secondDay = calendar.get(Calendar.DATE)
 
+    calendar.time = backupTime
 
     if (year == secondYear && month == secondMonth && date == secondDay) return true
 

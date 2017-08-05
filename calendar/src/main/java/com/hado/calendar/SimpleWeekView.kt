@@ -156,12 +156,13 @@ class SimpleWeekView(context: Context) : View(context) {
 
         mToday = -1
         mSeparatorMonthPath.reset()
+        val calendar = Calendar.getInstance()
         for (i in 0..mNumCells - 1) {
-            if (calendar.time.isSameDay(daysOfWeek[i])) {
+            if (calendar.time.isSameDay(calendar, daysOfWeek[i])) {
                 mToday = i
             }
 
-            mDayNumbers[i] = TimeUtils.getDateNumber(daysOfWeek[i])
+            mDayNumbers[i] = TimeUtils.getDateNumber(calendar, daysOfWeek[i])
         }
         updateSelectionPositions()
         updateSeparatorMonth()
