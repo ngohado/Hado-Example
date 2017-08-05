@@ -15,10 +15,6 @@ class SimpleWeekViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     fun setDrawingParams(drawingParams: HashMap<String, Int>, timezone: String) {
         this.drawingParams = drawingParams
-        (itemView as SimpleWeekView).setWeekParams(drawingParams, timezone)
-    }
-
-    fun invalidate() {
-        itemView.invalidate()
+        (itemView as SimpleWeekView).setWeekParams(drawingParams)
     }
 }

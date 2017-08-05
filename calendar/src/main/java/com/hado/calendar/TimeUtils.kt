@@ -1,6 +1,7 @@
 package com.hado.calendar
 
 import android.text.format.Time
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -48,10 +49,14 @@ object TimeUtils {
         return (julianDay - refDay) / 7
     }
 
-    fun getDateNumber(date: Date): Int {
+    fun getDateNumber(date: Date): String {
         val calendar = Calendar.getInstance()
         calendar.time = date
-        return calendar.get(Calendar.DATE)
+        val dateNumber = calendar.get(Calendar.DATE)
+        if (dateNumber == 1) {
+            return SimpleDateFormat("MMM d").format(date)
+        }
+        return dateNumber.toString()
     }
 }
 
@@ -66,9 +71,10 @@ fun Date.isSameDay(secondDate: Date): Boolean {
     calendar.time = secondDate
     val secondYear = calendar.get(Calendar.YEAR)
     val secondMonth = calendar.get(Calendar.MONTH)
-    val secondDate = calendar.get(Calendar.DATE)
+    val secondDay = calendar.get(Calendar.DATE)
 
-    if (year == secondYear && month == secondMonth && date == secondDate) return true
+
+    if (year == secondYear && month == secondMonth && date == secondDay) return true
 
     return false
 }

@@ -60,7 +60,6 @@ class WeeksAdapter(private val mContext: Context, params: HashMap<String, Int>) 
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_FOCUS_MONTH, mFocusMonth)
 
         holder.setDrawingParams(drawingParams, calendar.timeZone.displayName)
-        holder.invalidate()
     }
 
     override fun getItemCount(): Int {
