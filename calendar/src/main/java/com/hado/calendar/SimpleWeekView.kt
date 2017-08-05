@@ -248,6 +248,14 @@ class SimpleWeekView(context: Context) : View(context) {
                 }
             }
 
+            //define alpha of paint depend on past day and future day
+            when {
+                mWeek < mCurrentWeek -> mMonthNumPaint.alpha = 255 / 2
+                mWeek > mCurrentWeek -> mMonthNumPaint.alpha = 255
+                mWeek == mCurrentWeek && i >= mToday -> mMonthNumPaint.alpha = 255
+                else -> mMonthNumPaint.alpha = 255 / 2 //else that mean: this view is current week and the day at "i" index is past day
+            }
+
             val y = mDayNumberHeight + mDayNumberMargin
             val x = i * mCellWidth + mDayNumberMargin
             canvas.drawText(mDayNumbers[i], x.toFloat(), y.toFloat(), mMonthNumPaint)
@@ -291,20 +299,19 @@ class SimpleWeekView(context: Context) : View(context) {
      * This method update path of separator between two month
      */
     fun updateSeparatorMonth() {
+        val halfStrokeWidth = mSeparatorMonthPaint.strokeWidth / 2
         for ((index, dayNumberString) in mDayNumbers.withIndex()) {
-            val halfStrokeWidth = mSeparatorMonthPaint.strokeWidth / 2
             if (dayNumberString.length > 2) { //because the text of first day of month is eg: "Aug 1", the length is always larger than 2
                 mSeparatorMonthPath.moveTo(0f, if (index == 0) halfStrokeWidth else (mHeight - halfStrokeWidth))
-                for (j in 0..mNumCells - 1) {
+                for (i in 0..mNumCells - 1)
                     when {
-                        index > j -> mSeparatorMonthPath.lineTo((j + 1) * mCellWidth.toFloat(), mHeight - halfStrokeWidth)
-                        index < j -> mSeparatorMonthPath.lineTo((j + 1) * mCellWidth.toFloat(), halfStrokeWidth)
+                        index > i -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), mHeight - halfStrokeWidth)
+                        index < i -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
                         else -> {
-                            mSeparatorMonthPath.lineTo(j * mCellWidth.toFloat(), halfStrokeWidth)
-                            mSeparatorMonthPath.lineTo((j + 1) * mCellWidth.toFloat(), halfStrokeWidth)
+                            mSeparatorMonthPath.lineTo(i * mCellWidth.toFloat(), halfStrokeWidth)
+                            mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
                         }
                     }
-                }
             }
         }
     }
