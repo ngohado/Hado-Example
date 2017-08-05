@@ -77,7 +77,7 @@ class SimpleWeekView(context: Context) : View(context) {
     var mTimeZone: String = Time.getCurrentTimezone()
 
     var mFirstDayOfMonth: Int = -1
-    lateinit var mSeparatorMonthPath: Path
+    var mSeparatorMonthPath: Path = Path()
 
     var mBGColor: Int = 0
     var mSelectedWeekBGColor: Int = 0
@@ -163,6 +163,7 @@ class SimpleWeekView(context: Context) : View(context) {
 
         mToday = -1
         mFirstDayOfMonth = -1
+        mSeparatorMonthPath.reset()
 
         for (i in 0..mNumCells - 1) {
             if (calendar.time.isSameDay(daysOfWeek[i])) {
@@ -172,11 +173,21 @@ class SimpleWeekView(context: Context) : View(context) {
             mDayNumbers[i] = dayNumber.toString()
             if (dayNumber == 1) {
                 mFirstDayOfMonth = i
-                mSeparatorMonthPath = Path()
                 if (i == 0) {
                     mSeparatorMonthPath.moveTo(0f, mSeparatorMonthPaint.strokeWidth / 2)
                 } else {
                     mSeparatorMonthPath.moveTo(0f, mHeight.toFloat() - mSeparatorMonthPaint.strokeWidth / 2)
+                }
+
+                for (j in 0..mNumCells - 1) {
+                    when {
+                        mFirstDayOfMonth > j -> mSeparatorMonthPath.lineTo((j + 1) * mCellWidth.toFloat(), mHeight.toFloat() - mSeparatorMonthPaint.strokeWidth / 2)
+                        mFirstDayOfMonth < j -> mSeparatorMonthPath.lineTo((j + 1) * mCellWidth.toFloat(), mSeparatorMonthPaint.strokeWidth / 2)
+                        else -> {
+                            mSeparatorMonthPath.lineTo(j * mCellWidth.toFloat(), mSeparatorMonthPaint.strokeWidth / 2)
+                            mSeparatorMonthPath.lineTo((j + 1) * mCellWidth.toFloat(), mSeparatorMonthPaint.strokeWidth / 2)
+                        }
+                    }
                 }
             }
         }
@@ -240,11 +251,7 @@ class SimpleWeekView(context: Context) : View(context) {
 //        drawDaySeparators(canvas)
     }
 
-    /**
-     * Draws the week and month day numbers for this week. Override this method
-     * if you need different placement.
-     * @param canvas The canvas to draw on
-     */
+
     fun drawDayNumber(canvas: Canvas) {
         for (i in 0..mNumCells - 1) {
             when {
@@ -252,14 +259,6 @@ class SimpleWeekView(context: Context) : View(context) {
                 mWeek > mCurrentWeek -> mMonthNumPaint.color = mFutureDayColor
                 mWeek == mCurrentWeek && i >= mToday -> mMonthNumPaint.color = mFutureDayColor
                 else -> mMonthNumPaint.color = mPastDayColor
-            }
-
-            if (mFirstDayOfMonth != -1) {
-                when {
-                    mFirstDayOfMonth > i -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), mHeight.toFloat() - mSeparatorMonthPaint.strokeWidth / 2)
-                    mFirstDayOfMonth < i -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), mSeparatorMonthPaint.strokeWidth / 2)
-                    else -> mSeparatorMonthPath.lineTo(i * mCellWidth.toFloat(), mSeparatorMonthPaint.strokeWidth / 2)
-                }
             }
 
             val y = mDayNumberHeight + mDayNumberMargin
@@ -270,7 +269,9 @@ class SimpleWeekView(context: Context) : View(context) {
 
             canvas.drawLine((i * mCellWidth).toFloat(), 0f, (i * (mCellWidth)).toFloat(), mHeight.toFloat(), mSeparatorVerticalPaint)
         }
-        if (mFirstDayOfMonth != -1) canvas.drawPath(mSeparatorMonthPath, mSeparatorMonthPaint)
+        if (mFirstDayOfMonth != -1) {
+            canvas.drawPath(mSeparatorMonthPath, mSeparatorMonthPaint)
+        }
         canvas.drawLine(0f, mHeight.toFloat(), width.toFloat(), mHeight.toFloat(), mSeparatorHorizontalPaint)
     }
 
