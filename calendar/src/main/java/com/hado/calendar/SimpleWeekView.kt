@@ -22,6 +22,7 @@ import android.graphics.Paint.Style
 import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
 import android.text.format.Time
+import android.view.MotionEvent
 import android.view.View
 import java.security.InvalidParameterException
 import java.util.*
@@ -31,11 +32,15 @@ class SimpleWeekView(context: Context) : View(context) {
 
     val calendar: Calendar = Calendar.getInstance()
 
+    var selectDayListener: ((week: Int, date: Date) -> Unit)? = null
+
     // affects the padding on the sides of this view
     var mPadding = 0
 
     var mSelectedDayRect = Rect()
+    var mCurrentDayRect = Rect()
     var mSelectedDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    var mCurrentDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mMonthNumPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorVerticalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorHorizontalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -60,18 +65,18 @@ class SimpleWeekView(context: Context) : View(context) {
     var mHeight: Int = DEFAULT_HEIGHT
     // If this view contains the selected day
     var mHasSelectedDay: Boolean = false
+    // If this view contains the current day
+    var mHasCurrentDay: Boolean = false
     // Which day is selected [0-6] or -1 if no day is selected
     var mSelectedDay: Int = DEFAULT_SELECTED_DAY
+    // Which current day is [0-6]
+    var mCurrentDay: Int = 0
     // Which day is today [0-6] or -1 if no day is today
     var mToday: Int = DEFAULT_SELECTED_DAY
     // Which day of the week to start on [0-6]
     var mWeekStart: Int = DEFAULT_WEEK_START
     // The number of days + a spot for week number if it is displayed
     var mNumCells: Int = DEFAULT_NUM_DAYS
-    // The left edge of the selected day
-    var mSelectedLeft: Int = -1
-    // The right edge of the selected day
-    var mSelectedRight: Int = -1
 
     var mSeparatorMonthPath: Path = Path()
 
@@ -137,6 +142,11 @@ class SimpleWeekView(context: Context) : View(context) {
             mCurrentWeek = params[VIEW_PARAMS_CURRENT_WEEK]!!
         }
 
+        if (params.containsKey(VIEW_PARAMS_CURRENT_DAY)) {
+            mCurrentDay = params[VIEW_PARAMS_CURRENT_DAY]!!
+        }
+        mHasCurrentDay = mCurrentDay != -1
+
         if (params.containsKey(VIEW_PARAMS_SELECTED_DAY)) {
             mSelectedDay = params[VIEW_PARAMS_SELECTED_DAY]!!
         }
@@ -165,6 +175,7 @@ class SimpleWeekView(context: Context) : View(context) {
             mDayNumbers[i] = TimeUtils.getDateNumber(calendar, daysOfWeek[i])
         }
         updateSelectionPositions()
+        updateCurrentDayPositions()
         updateSeparatorMonth()
     }
 
@@ -173,9 +184,12 @@ class SimpleWeekView(context: Context) : View(context) {
      * want to use a different paint.
      */
     fun initView() {
-        mSelectedDayPaint.isFakeBoldText = false
-        mSelectedDayPaint.textSize = MINI_DAY_NUMBER_TEXT_SIZE.toFloat()
-        mSelectedDayPaint.style = Style.FILL
+        mSelectedDayPaint.strokeWidth = MINI_TODAY_OUTLINE_WIDTH.toFloat()
+        mSelectedDayPaint.style = Style.STROKE
+        mSelectedDayPaint.color = mTodayOutlineColor
+
+        mCurrentDayPaint.style = Style.FILL
+        mCurrentDayPaint.color = Color.YELLOW
 
         mSeparatorVerticalPaint.style = Style.STROKE
         mSeparatorVerticalPaint.strokeWidth = DAY_SEPARATOR_WIDTH.toFloat()
@@ -220,8 +234,9 @@ class SimpleWeekView(context: Context) : View(context) {
     }
 
     override fun onDraw(canvas: Canvas) {
+        drawCurrentDayBackground(canvas)
         drawDayNumber(canvas)
-//        drawDaySeparators(canvas)
+        drawSelectedDaySeparator(canvas)
     }
 
 
@@ -268,22 +283,17 @@ class SimpleWeekView(context: Context) : View(context) {
         canvas.drawLine(0f, mHeight.toFloat(), width.toFloat(), mHeight.toFloat(), mSeparatorHorizontalPaint)
     }
 
-    /**
-     * Draws a horizontal line for separating the weeks. Override this method if
-     * you want custom separators.
-     * @param canvas The canvas to draw on
-     */
-    fun drawDaySeparators(canvas: Canvas) {
+    fun drawCurrentDayBackground(canvas: Canvas) {
+        if (mHasCurrentDay) {
+            canvas.drawRect(mCurrentDayRect, mCurrentDayPaint)
+        }
+    }
+
+    fun drawSelectedDaySeparator(canvas: Canvas) {
         if (mHasSelectedDay) {
-            mSelectedDayRect.top = 1
-            mSelectedDayRect.bottom = mHeight - 1
-            mSelectedDayRect.left = mSelectedLeft + 1
-            mSelectedDayRect.right = mSelectedRight - 1
-            mSelectedDayPaint.strokeWidth = MINI_TODAY_OUTLINE_WIDTH.toFloat()
-            mSelectedDayPaint.style = Style.STROKE
-            mSelectedDayPaint.color = mTodayOutlineColor
             canvas.drawRect(mSelectedDayRect, mSelectedDayPaint)
         }
+
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -292,6 +302,7 @@ class SimpleWeekView(context: Context) : View(context) {
         mWidth = w
         mCellWidth = mWidth / mNumCells
         updateSelectionPositions()
+        updateCurrentDayPositions()
         updateSeparatorMonth()
     }
 
@@ -325,8 +336,30 @@ class SimpleWeekView(context: Context) : View(context) {
             if (selectedPosition < 0) {
                 selectedPosition += 7
             }
-            mSelectedLeft = selectedPosition * (mWidth - mPadding * 2) / mNumCells + mPadding
-            mSelectedRight = (selectedPosition + 1) * (mWidth - mPadding * 2) / mNumCells + mPadding
+            val selectedLeft = selectedPosition * (mWidth - mPadding * 2) / mNumCells + mPadding
+            val selectedRight = (selectedPosition + 1) * (mWidth - mPadding * 2) / mNumCells + mPadding
+            mSelectedDayRect.top = 1
+            mSelectedDayRect.bottom = mHeight - 1
+            mSelectedDayRect.left = selectedLeft + 1
+            mSelectedDayRect.right = selectedRight - 1
+        }
+    }
+
+    /**
+     * This calculates the positions for the current day lines.
+     */
+    fun updateCurrentDayPositions() {
+        if (mHasCurrentDay) {
+            var currentDayPosition = mCurrentDay - mWeekStart
+            if (currentDayPosition < 0) {
+                currentDayPosition += 7
+            }
+            val currentDayLeft = currentDayPosition * (mWidth - mPadding * 2) / mNumCells + mPadding
+            val currentDayRight = (currentDayPosition + 1) * (mWidth - mPadding * 2) / mNumCells + mPadding
+            mCurrentDayRect.top = 1
+            mCurrentDayRect.bottom = mHeight - 1
+            mCurrentDayRect.left = currentDayLeft + 1
+            mCurrentDayRect.right = currentDayRight - 1
         }
     }
 
@@ -334,10 +367,39 @@ class SimpleWeekView(context: Context) : View(context) {
         setMeasuredDimension(View.MeasureSpec.getSize(widthMeasureSpec), mHeight)
     }
 
+    var clickDownTime: Long = 0L
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
+                clickDownTime = System.currentTimeMillis()
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+                if (System.currentTimeMillis() - clickDownTime < CLICK_TIME_OUT) {
+                    val dateSelected = getDayFromLocation(event.rawX)
+                    dateSelected?.let {
+                        selectDayListener?.invoke(mWeek, it)
+                        val calendar = Calendar.getInstance()
+                        calendar.firstDayOfWeek = if (mWeekStart == 0) Calendar.SUNDAY else Calendar.MONDAY
+                        calendar.time = it
+                        mHasSelectedDay = true
+                        mSelectedDay = calendar.get(Calendar.DAY_OF_WEEK) - 1
+                        updateSelectionPositions()
+                        invalidate()
+                    }
+                    return true
+                }
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
     companion object {
         private val mSB = StringBuilder(50)
         private val mF = Formatter(mSB, Locale.getDefault())
 
+        val CLICK_TIME_OUT = 500
         /**
          * This sets the height of this week in pixels
          */
@@ -351,6 +413,8 @@ class SimpleWeekView(context: Context) : View(context) {
          * through [Time.SATURDAY].
          */
         val VIEW_PARAMS_SELECTED_DAY = "selected_day"
+
+        val VIEW_PARAMS_CURRENT_DAY = "current_day"
         /**
          * Which day the week should start on. [Time.SUNDAY] through
          * [Time.SATURDAY].
