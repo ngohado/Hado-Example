@@ -387,9 +387,6 @@ class SimpleWeekView(context: Context) : View(context) {
     }
 
     companion object {
-        private val mSB = StringBuilder(50)
-        private val mF = Formatter(mSB, Locale.getDefault())
-
         val CLICK_TIME_OUT = 500
         /**
          * This sets the height of this week in pixels

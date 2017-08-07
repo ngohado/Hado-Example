@@ -22,9 +22,9 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
     var mCurrentWeek: Int = 0
 
     //0: Sunday, 1: Monday
-    private var mFirstDayOfWeek: Int = 0
+    var mFirstDayOfWeek: Int = 0
 
-    private var mFocusMonth = DEFAULT_MONTH_FOCUS
+    var mFocusMonth = DEFAULT_MONTH_FOCUS
 
 
     init {
