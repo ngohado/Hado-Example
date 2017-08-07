@@ -40,7 +40,7 @@ class SimpleWeekView(context: Context) : View(context) {
     var mCurrentDayRect = Rect()
     var mSelectedDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mCurrentDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    var mMonthNumPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    var mDayNumberPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorVerticalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorHorizontalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorMonthPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -193,13 +193,13 @@ class SimpleWeekView(context: Context) : View(context) {
         mSeparatorMonthPaint.strokeWidth = DAY_SEPARATOR_WIDTH.toFloat() * 2
         mSeparatorMonthPaint.color = Color.BLACK
 
-        mMonthNumPaint.isFakeBoldText = true
-        mMonthNumPaint.textSize = MINI_DAY_NUMBER_TEXT_SIZE.toFloat()
-        mMonthNumPaint.style = Style.FILL
+        mDayNumberPaint.isFakeBoldText = true
+        mDayNumberPaint.textSize = MINI_DAY_NUMBER_TEXT_SIZE.toFloat()
+        mDayNumberPaint.style = Style.FILL
 
         //use to compute the height of number text day
         val rect = Rect()
-        mMonthNumPaint.getTextBounds("12", 0, 2, rect)
+        mDayNumberPaint.getTextBounds("12", 0, 2, rect)
         mDayNumberHeight = Math.abs(rect.top - rect.bottom)
     }
 
@@ -233,36 +233,36 @@ class SimpleWeekView(context: Context) : View(context) {
         for (i in 0..mNumCells - 1) {
             //define color of past day and future day
             when {
-                mWeek < mCurrentWeek -> mMonthNumPaint.color = mPastDayColor
-                mWeek > mCurrentWeek -> mMonthNumPaint.color = mFutureDayColor
-                mWeek == mCurrentWeek && i >= mToday -> mMonthNumPaint.color = mFutureDayColor
-                else -> mMonthNumPaint.color = mPastDayColor //else that mean: this view is current week and the day at "i" index is past day
+                mWeek < mCurrentWeek -> mDayNumberPaint.color = mPastDayColor
+                mWeek > mCurrentWeek -> mDayNumberPaint.color = mFutureDayColor
+                mWeek == mCurrentWeek && i >= mToday -> mDayNumberPaint.color = mFutureDayColor
+                else -> mDayNumberPaint.color = mPastDayColor //else that mean: this view is current week and the day at "i" index is past day
             }
 
             //define color of weekend day
             when (mWeekStart) {
                 0 -> { //start with sunday
-                    if (i == mNumCells - 1) mMonthNumPaint.color = Color.BLUE
-                    if (i == 0) mMonthNumPaint.color = Color.RED
+                    if (i == mNumCells - 1) mDayNumberPaint.color = Color.BLUE
+                    if (i == 0) mDayNumberPaint.color = Color.RED
                 }
 
                 1 -> { //start with monday
-                    if (i == mNumCells - 2) mMonthNumPaint.color = Color.BLUE
-                    if (i == mNumCells - 1) mMonthNumPaint.color = Color.RED
+                    if (i == mNumCells - 2) mDayNumberPaint.color = Color.BLUE
+                    if (i == mNumCells - 1) mDayNumberPaint.color = Color.RED
                 }
             }
 
             //define alpha of paint depend on past day and future day
             when {
-                mWeek < mCurrentWeek -> mMonthNumPaint.alpha = 255 / 2
-                mWeek > mCurrentWeek -> mMonthNumPaint.alpha = 255
-                mWeek == mCurrentWeek && i >= mToday -> mMonthNumPaint.alpha = 255
-                else -> mMonthNumPaint.alpha = 255 / 2 //else that mean: this view is current week and the day at "i" index is past day
+                mWeek < mCurrentWeek -> mDayNumberPaint.alpha = 255 / 2
+                mWeek > mCurrentWeek -> mDayNumberPaint.alpha = 255
+                mWeek == mCurrentWeek && i >= mToday -> mDayNumberPaint.alpha = 255
+                else -> mDayNumberPaint.alpha = 255 / 2 //else that mean: this view is current week and the day at "i" index is past day
             }
 
             val y = mDayNumberHeight + mDayNumberMargin
             val x = i * mCellWidth + mDayNumberMargin
-            canvas.drawText(mDayNumbers[i], x.toFloat(), y.toFloat(), mMonthNumPaint)
+            canvas.drawText(mDayNumbers[i], x.toFloat(), y.toFloat(), mDayNumberPaint)
 
             if (i == 0) continue
 
