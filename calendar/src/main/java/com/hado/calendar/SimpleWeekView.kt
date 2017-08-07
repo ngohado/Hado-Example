@@ -21,7 +21,6 @@ import android.graphics.*
 import android.graphics.Paint.Style
 import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
-import android.text.format.Time
 import android.view.MotionEvent
 import android.view.View
 import java.security.InvalidParameterException
