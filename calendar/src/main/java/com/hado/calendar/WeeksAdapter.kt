@@ -16,16 +16,15 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
 
     // The day to highlight as selected
     var mSelectedDate: Date = Calendar.getInstance().time
-    val mCurrentDate: Date = Calendar.getInstance().time
 
     // The week since 1970 that the selected day is in
     var mSelectedWeek: Int = 0
     var mCurrentWeek: Int = 0
 
     //0: Sunday, 1: Monday
-    private var mFirstDayOfWeek: Int = 0
+    var mFirstDayOfWeek: Int = 0
 
-    private var mFocusMonth = DEFAULT_MONTH_FOCUS
+    var mFocusMonth = DEFAULT_MONTH_FOCUS
 
 
     init {
@@ -46,13 +45,7 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
     override fun onBindViewHolder(holder: SimpleWeekViewHolder, position: Int) {
         val drawingParams = holder.drawingParams
 
-        var currentDay = -1
         var selectedDay = -1
-
-        if (mCurrentWeek == position) {
-            calendar.time = mCurrentDate
-            currentDay = calendar.get(Calendar.DAY_OF_WEEK) - 1
-        }
 
         if (mSelectedWeek == position) {
             calendar.time = mSelectedDate
@@ -60,7 +53,6 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
         }
 
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_HEIGHT, 250)
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_CURRENT_DAY, currentDay)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_SELECTED_DAY, selectedDay)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK_START, mFirstDayOfWeek)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK, position)

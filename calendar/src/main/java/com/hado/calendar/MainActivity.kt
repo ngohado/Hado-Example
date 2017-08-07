@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         val currentWeek = TimeUtils.getWeekSinceJulianDay(false)
         val weekParams = HashMap<String, Int>()
         weekParams.put(WeeksAdapter.WEEK_PARAMS_CURRENT_WEEK, currentWeek)
-        weekParams.put(WeeksAdapter.WEEK_PARAMS_WEEK_START, 0)
+        weekParams.put(WeeksAdapter.WEEK_PARAMS_WEEK_START, 1)
         adapter = WeeksAdapter(weekParams)
         rvCalendar.adapter = adapter
         rvCalendar.scrollToPosition(currentWeek)
