@@ -1,1 +1,1 @@
-include ':calendar', ':calendargoogle', ':switch'
+include ':calendar', ':calendargoogle', ':switch', ':playgroundcamera'
