@@ -21,6 +21,7 @@ import android.graphics.*
 import android.graphics.Paint.Style
 import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
+import android.text.TextPaint
 import android.view.MotionEvent
 import android.view.View
 import java.security.InvalidParameterException
@@ -40,7 +41,7 @@ class SimpleWeekView(context: Context) : View(context) {
     var mCurrentDayRect = Rect()
     var mSelectedDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mCurrentDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    var mDayNumberPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    var mDayNumberPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorVerticalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorHorizontalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorMonthPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -55,8 +56,6 @@ class SimpleWeekView(context: Context) : View(context) {
     var mCurrentWeek = -1
     //The margin distance top and left between day's number and day's bounder
     var mDayNumberMargin = DEFAULT_DAY_NUMBER_MARGIN
-    // The height of day number, it's computed by MINI_DAY_NUMBER_TEXT_SIZE * scale
-    var mDayNumberHeight: Int = 0
     // Quick reference to the width of this view, matches parent
     var mWidth: Int = 0
     var mCellWidth: Int = 0
@@ -152,7 +151,7 @@ class SimpleWeekView(context: Context) : View(context) {
         if (params.containsKey(VIEW_PARAMS_WEEK_START)) {
             mWeekStart = params[VIEW_PARAMS_WEEK_START]!!
         }
-        val daysOfWeek = TimeUtils.getDaysOfWeek(mWeek, mCurrentWeek, mWeekStart)
+        val daysOfWeek = TimeUtils.getDaysOfWeek(mWeek, mCurrentWeek, mWeekStart, calendar)
 
         mToday = -1
         val calendar = Calendar.getInstance()
@@ -196,11 +195,6 @@ class SimpleWeekView(context: Context) : View(context) {
         mDayNumberPaint.isFakeBoldText = true
         mDayNumberPaint.textSize = MINI_DAY_NUMBER_TEXT_SIZE.toFloat()
         mDayNumberPaint.style = Style.FILL
-
-        //use to compute the height of number text day
-        val rect = Rect()
-        mDayNumberPaint.getTextBounds("12", 0, 2, rect)
-        mDayNumberHeight = Math.abs(rect.top - rect.bottom)
     }
 
     /**
@@ -219,7 +213,7 @@ class SimpleWeekView(context: Context) : View(context) {
 
         // Selection is (x - start) / (pixels/day) == (x -s) * day / pixels
         val dayPosition = ((x - dayStart) * mNumCells / (mWidth - dayStart - mPadding)).toInt()
-        return TimeUtils.getDaysOfWeek(mWeek, mCurrentWeek, mWeekStart)[dayPosition]
+        return TimeUtils.getDaysOfWeek(mWeek, mCurrentWeek, mWeekStart, calendar)[dayPosition]
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -260,9 +254,9 @@ class SimpleWeekView(context: Context) : View(context) {
                 else -> mDayNumberPaint.alpha = 255 / 2 //else that mean: this view is current week and the day at "i" index is past day
             }
 
-            val y = mDayNumberHeight + mDayNumberMargin
+            val y = Math.abs(mDayNumberPaint.ascent()) + mDayNumberMargin
             val x = i * mCellWidth + mDayNumberMargin
-            canvas.drawText(mDayNumbers[i], x.toFloat(), y.toFloat(), mDayNumberPaint)
+            canvas.drawText(mDayNumbers[i], x.toFloat(), y, mDayNumberPaint)
 
             if (i == 0) continue
 
@@ -301,20 +295,24 @@ class SimpleWeekView(context: Context) : View(context) {
     fun updateSeparatorMonth() {
         mSeparatorMonthPath.reset()
         val halfStrokeWidth = mSeparatorMonthPaint.strokeWidth / 2
-        for ((index, dayNumberString) in mDayNumbers.withIndex()) {
-            if (dayNumberString.length > 2) { //because the text of first day of month is eg: "Aug 1", the length is always larger than 2
-                mSeparatorMonthPath.moveTo(0f, if (index == 0) halfStrokeWidth else (mHeight - halfStrokeWidth))
-                for (i in 0..mNumCells - 1)
-                    when {
-                        index > i -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), mHeight - halfStrokeWidth)
-                        index < i -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
-                        else -> {
-                            mSeparatorMonthPath.lineTo(i * mCellWidth.toFloat(), halfStrokeWidth)
-                            mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
-                        }
-                    }
-            }
+        //because the text of first day of month is eg: "Aug 1", the length is always larger than 2
+        val firstDayOfMonthNumber: Int =  mDayNumbers.indexOfFirst { dayNumberString ->
+            dayNumberString.length > 2
         }
+
+        //if current week is'nt contain a fist day of month then return
+        if (firstDayOfMonthNumber == -1) return
+
+        mSeparatorMonthPath.moveTo(0f, if (firstDayOfMonthNumber == 0) halfStrokeWidth else (mHeight - halfStrokeWidth))
+        for (i in 0..mNumCells - 1)
+            when {
+                i < firstDayOfMonthNumber -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), mHeight - halfStrokeWidth)
+                i > firstDayOfMonthNumber -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
+                else -> { // i is first day of month number
+                    mSeparatorMonthPath.lineTo(i * mCellWidth.toFloat(), halfStrokeWidth)
+                    mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
+                }
+            }
     }
 
     /**
@@ -368,11 +366,11 @@ class SimpleWeekView(context: Context) : View(context) {
             MotionEvent.ACTION_UP -> {
                 if (System.currentTimeMillis() - clickDownTime < CLICK_TIME_OUT) {
                     val dateSelected = getDayFromLocation(event.rawX)
-                    dateSelected?.let {
-                        selectDayListener?.invoke(mWeek, it)
+                    if (dateSelected != null) {
+                        selectDayListener?.invoke(mWeek, dateSelected)
                         val calendar = Calendar.getInstance()
                         calendar.firstDayOfWeek = if (mWeekStart == 0) Calendar.SUNDAY else Calendar.MONDAY
-                        calendar.time = it
+                        calendar.time = dateSelected
                         mHasSelectedDay = true
                         mSelectedDay = calendar.get(Calendar.DAY_OF_WEEK) - 1
                         updateSelectionPositions()
@@ -395,6 +393,7 @@ class SimpleWeekView(context: Context) : View(context) {
         val VIEW_PARAMS_WEEK = "week"
 
         val VIEW_PARAMS_CURRENT_WEEK = "current_week"
+
         /**
          * This sets one of the days in this view as selected [Time.SUNDAY]
          * through [Time.SATURDAY].
@@ -406,12 +405,6 @@ class SimpleWeekView(context: Context) : View(context) {
          * [Time.SATURDAY].
          */
         val VIEW_PARAMS_WEEK_START = "week_start"
-
-        /**
-         * Which month is currently in focus, as defined by [Time.month]
-         * [0-11].
-         */
-        val VIEW_PARAMS_FOCUS_MONTH = "focus_month"
 
         var DEFAULT_HEIGHT = 32
         var MIN_HEIGHT = 10
