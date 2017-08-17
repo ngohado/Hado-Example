@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ButterKnife.bind(this)
-        val currentWeek = TimeUtils.getWeekSinceJulianDay(false)
+        val currentWeek = TimeUtils.getWeekSinceJulianDay(false, Calendar.getInstance())
         val weekParams = HashMap<String, Int>()
         weekParams.put(WeeksAdapter.WEEK_PARAMS_CURRENT_WEEK, currentWeek)
         weekParams.put(WeeksAdapter.WEEK_PARAMS_WEEK_START, 1)

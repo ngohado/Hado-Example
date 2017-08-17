@@ -24,7 +24,6 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
     //0: Sunday, 1: Monday
     var mFirstDayOfWeek: Int = 0
 
-    var mFocusMonth = DEFAULT_MONTH_FOCUS
 
 
     init {
@@ -57,7 +56,6 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK_START, mFirstDayOfWeek)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK, position)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_CURRENT_WEEK, mCurrentWeek)
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_FOCUS_MONTH, mFocusMonth)
 
         holder.setDrawingParams(drawingParams, calendar.timeZone.displayName)
     }
@@ -84,10 +82,6 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
             mCurrentWeek = params[WEEK_PARAMS_CURRENT_WEEK]!!
         } else {
             throw InvalidParameterException("You must specify the current week number")
-        }
-
-        if (params.containsKey(WEEK_PARAMS_FOCUS_MONTH)) {
-            mFocusMonth = params[WEEK_PARAMS_FOCUS_MONTH]!!
         }
 
         if (params.containsKey(WEEK_PARAMS_WEEK_START)) {
@@ -133,8 +127,6 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
 
 
         private val WEEK_COUNT = 3497
-
-        private val DEFAULT_MONTH_FOCUS = 0
 
         private val mScale = 0f
     }
