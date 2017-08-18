@@ -19,7 +19,6 @@ package com.hado.calendar
 import android.content.Context
 import android.graphics.*
 import android.graphics.Paint.Style
-import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
 import android.text.TextPaint
 import android.view.MotionEvent
@@ -43,9 +42,7 @@ class SimpleWeekView(context: Context) : View(context) {
     var mCurrentDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mDayNumberPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorVerticalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    var mSeparatorHorizontalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     var mSeparatorMonthPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    var mSelectedDayLine: Drawable
 
     // Cache the number strings so we don't have to recompute them each time
     lateinit var mDayNumbers: Array<String>
@@ -74,26 +71,18 @@ class SimpleWeekView(context: Context) : View(context) {
 
     var mSeparatorMonthPath: Path = Path()
 
-    var mBGColor: Int = 0
-    var mSelectedWeekBGColor: Int = 0
     var mFutureDayColor: Int = 0
+    var mTodayColor: Int = 0
     var mPastDayColor: Int = 0
-    var mDaySeparatorColor: Int = 0
-    var mTodayOutlineColor: Int = 0
-    var mWeekNumColor: Int = 0
+    var mSelectedDayColor: Int = 0
 
     init {
         //Use to apply effect line dashed
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-
-        mBGColor = ContextCompat.getColor(context, R.color.month_bgcolor)
-        mSelectedWeekBGColor = ContextCompat.getColor(context, R.color.month_selected_week_bgcolor)
+        setLayerType(View.LAYER_TYPE_SOFTWARE, mSelectedDayPaint)
+        mTodayColor = Color.parseColor("#F18D00")
         mFutureDayColor = ContextCompat.getColor(context, R.color.month_mini_day_number)
         mPastDayColor = ContextCompat.getColor(context, R.color.month_other_month_day_number)
-        mDaySeparatorColor = ContextCompat.getColor(context, R.color.month_grid_lines)
-        mTodayOutlineColor = ContextCompat.getColor(context, R.color.mini_month_today_outline_color)
-        mWeekNumColor = ContextCompat.getColor(context, R.color.month_week_num_color)
-        mSelectedDayLine = ContextCompat.getDrawable(context, R.drawable.dayline_minical_holo_light)
+        mSelectedDayColor = ContextCompat.getColor(context, R.color.mini_month_today_outline_color)
 
         if (mScale == 0f) {
             mScale = context.resources.displayMetrics.density
@@ -155,7 +144,7 @@ class SimpleWeekView(context: Context) : View(context) {
 
         mToday = -1
         val calendar = Calendar.getInstance()
-        for (i in 0..mNumCells - 1) {
+        for (i in 0 until mNumCells) {
             if (calendar.time.isSameDay(calendar, daysOfWeek[i])) {
                 mToday = i
             }
@@ -171,28 +160,23 @@ class SimpleWeekView(context: Context) : View(context) {
      * Sets up the text and style properties for painting. Override this if you
      * want to use a different paint.
      */
-    fun initView() {
+    private fun initView() {
         mSelectedDayPaint.strokeWidth = MINI_TODAY_OUTLINE_WIDTH.toFloat()
         mSelectedDayPaint.style = Style.STROKE
-        mSelectedDayPaint.color = mTodayOutlineColor
+        mSelectedDayPaint.color = mSelectedDayColor
 
         mCurrentDayPaint.style = Style.FILL
-        mCurrentDayPaint.color = Color.YELLOW
+        mCurrentDayPaint.color = Color.parseColor("#FFFEC4")
 
         mSeparatorVerticalPaint.style = Style.STROKE
         mSeparatorVerticalPaint.strokeWidth = DAY_SEPARATOR_WIDTH.toFloat()
-        mSeparatorVerticalPaint.pathEffect = DashPathEffect(floatArrayOf(3f, 5f), 0f)
+        mSeparatorVerticalPaint.pathEffect = DashPathEffect(floatArrayOf(7f, 7f), 0f)
         mSeparatorVerticalPaint.color = Color.parseColor("#cccccc")
-
-        mSeparatorHorizontalPaint.style = Style.STROKE
-        mSeparatorHorizontalPaint.strokeWidth = DAY_SEPARATOR_WIDTH.toFloat()
-        mSeparatorHorizontalPaint.color = Color.GRAY
 
         mSeparatorMonthPaint.style = Style.STROKE
         mSeparatorMonthPaint.strokeWidth = DAY_SEPARATOR_WIDTH.toFloat() * 2
         mSeparatorMonthPaint.color = Color.BLACK
 
-        mDayNumberPaint.isFakeBoldText = true
         mDayNumberPaint.textSize = MINI_DAY_NUMBER_TEXT_SIZE.toFloat()
         mDayNumberPaint.style = Style.FILL
     }
@@ -205,7 +189,7 @@ class SimpleWeekView(context: Context) : View(context) {
      * @return A time object for the tapped day or null if the position wasn't
      * * in a day
      */
-    fun getDayFromLocation(x: Float): Date? {
+    private fun getDayFromLocation(x: Float): Date? {
         val dayStart = mPadding
         if (x < dayStart || x > mWidth - mPadding) {
             return null
@@ -223,13 +207,17 @@ class SimpleWeekView(context: Context) : View(context) {
     }
 
 
-    fun drawDayNumber(canvas: Canvas) {
-        for (i in 0..mNumCells - 1) {
+    private fun drawDayNumber(canvas: Canvas) {
+        for (i in 0 until mNumCells) {
             //define color of past day and future day
             when {
                 mWeek < mCurrentWeek -> mDayNumberPaint.color = mPastDayColor
                 mWeek > mCurrentWeek -> mDayNumberPaint.color = mFutureDayColor
-                mWeek == mCurrentWeek && i >= mToday -> mDayNumberPaint.color = mFutureDayColor
+                mWeek == mCurrentWeek && i >= mToday -> if (mToday == i) {
+                    mDayNumberPaint.color = mTodayColor
+                } else {
+                    mDayNumberPaint.color = mFutureDayColor
+                }
                 else -> mDayNumberPaint.color = mPastDayColor //else that mean: this view is current week and the day at "i" index is past day
             }
 
@@ -263,16 +251,16 @@ class SimpleWeekView(context: Context) : View(context) {
             canvas.drawLine((i * mCellWidth).toFloat(), 0f, (i * (mCellWidth)).toFloat(), mHeight.toFloat(), mSeparatorVerticalPaint)
         }
         canvas.drawPath(mSeparatorMonthPath, mSeparatorMonthPaint)
-        canvas.drawLine(0f, mHeight.toFloat(), width.toFloat(), mHeight.toFloat(), mSeparatorHorizontalPaint)
+        canvas.drawLine(0f, mHeight.toFloat(), width.toFloat(), mHeight.toFloat(), mSeparatorVerticalPaint)
     }
 
-    fun drawCurrentDayBackground(canvas: Canvas) {
+    private fun drawCurrentDayBackground(canvas: Canvas) {
         if (mToday != -1) {
             canvas.drawRect(mCurrentDayRect, mCurrentDayPaint)
         }
     }
 
-    fun drawSelectedDaySeparator(canvas: Canvas) {
+    private fun drawSelectedDaySeparator(canvas: Canvas) {
         if (mHasSelectedDay) {
             canvas.drawRect(mSelectedDayRect, mSelectedDayPaint)
         }
@@ -292,7 +280,7 @@ class SimpleWeekView(context: Context) : View(context) {
     /**
      * This method update path of separator between two month
      */
-    fun updateSeparatorMonth() {
+    private fun updateSeparatorMonth() {
         mSeparatorMonthPath.reset()
         val halfStrokeWidth = mSeparatorMonthPaint.strokeWidth / 2
         //because the text of first day of month is eg: "Aug 1", the length is always larger than 2
@@ -304,7 +292,7 @@ class SimpleWeekView(context: Context) : View(context) {
         if (firstDayOfMonthNumber == -1) return
 
         mSeparatorMonthPath.moveTo(0f, if (firstDayOfMonthNumber == 0) halfStrokeWidth else (mHeight - halfStrokeWidth))
-        for (i in 0..mNumCells - 1)
+        for (i in 0 until mNumCells)
             when {
                 i < firstDayOfMonthNumber -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), mHeight - halfStrokeWidth)
                 i > firstDayOfMonthNumber -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
@@ -318,7 +306,7 @@ class SimpleWeekView(context: Context) : View(context) {
     /**
      * This calculates the positions for the selected day lines.
      */
-    fun updateSelectionPositions() {
+    private fun updateSelectionPositions() {
         if (mHasSelectedDay) {
             var selectedPosition = mSelectedDay - mWeekStart
             if (selectedPosition < 0) {
@@ -336,7 +324,7 @@ class SimpleWeekView(context: Context) : View(context) {
     /**
      * This calculates the positions for the current day lines.
      */
-    fun updateCurrentDayPositions() {
+    private fun updateCurrentDayPositions() {
         if (mToday != -1) {
             var currentDayPosition = mToday
             if (currentDayPosition < 0) {
