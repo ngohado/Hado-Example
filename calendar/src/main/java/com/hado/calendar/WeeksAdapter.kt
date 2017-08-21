@@ -51,7 +51,7 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
             selectedDay = calendar.get(Calendar.DAY_OF_WEEK) - 1
         }
 
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_HEIGHT, 250)
+        drawingParams.put(SimpleWeekView.VIEW_PARAMS_HEIGHT, 100)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_SELECTED_DAY, selectedDay)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK_START, mFirstDayOfWeek)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK, position)
@@ -119,6 +119,5 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
 
         private val WEEK_COUNT = 3497
 
-        private val mScale = 0f
     }
 }

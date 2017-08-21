@@ -9,12 +9,13 @@ import kotlin.collections.ArrayList
  * Created by DoanNH on 8/1/2017.
  */
 object TimeUtils {
-    fun getWeekSinceJulianDay(firstDayOfWeek: Int, calendar: Calendar): Int = getWeeksSinceEpochFromJulianDay(getJulianDay(calendar), firstDayOfWeek)
+    fun getWeekSinceJulianDay(firstDayOfWeek: Int): Int = getWeeksSinceEpochFromJulianDay(getJulianDay(), firstDayOfWeek)
 
-    fun getDaysOfWeek(week: Int, currentWeek: Int, firstDayOfWeek: Int, calendar: Calendar): ArrayList<Date> {
-        val backupTime = calendar.time //need backup time because the calendar is changed time, and we want to keep it as it came
-
-        calendar.firstDayOfWeek = if (firstDayOfWeek == 0) Calendar.SUNDAY else Calendar.MONDAY
+    fun getDaysOfWeek(week: Int, currentWeek: Int, firstDayOfWeek: Int): ArrayList<Date> {
+        val calendar = Calendar.getInstance()
+        if (firstDayOfWeek == 1) {
+            calendar.add(Calendar.DAY_OF_MONTH, -1)
+        }
         calendar.set(Calendar.DAY_OF_WEEK, if (firstDayOfWeek == 0) Calendar.SUNDAY else Calendar.MONDAY)
 
         val betweenNumber = week - currentWeek
@@ -27,16 +28,11 @@ object TimeUtils {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        if (betweenNumber == 0) {
-            println("Current week: $currentWeek \nFirst day: ${daysOfWeek[0]} \nToday: $backupTime")
-        }
-
-        calendar.time = backupTime
         return daysOfWeek
     }
 
-    fun getJulianDay(calendar: Calendar): Int {
-
+    private fun getJulianDay(): Int {
+        val calendar = Calendar.getInstance()
         val month = calendar.get(Calendar.MONTH) + 1
         val a = (14 - month) / 12
         val y = calendar.get(Calendar.YEAR) + 4800 - a
@@ -55,10 +51,8 @@ object TimeUtils {
     }
 
     fun getDateNumber(calendar: Calendar, date: Date): String {
-        val backupTime = calendar.time //need backup time because the calendar is changed time, and we want to keep it as it came
         calendar.time = date
         val dateNumber = calendar.get(Calendar.DATE)
-        calendar.time = backupTime
         if (dateNumber == 1) {
             return SimpleDateFormat("MMM d").format(date) //TODO: move string format to strings.xml to become flexible in difference language
         }
@@ -66,22 +60,22 @@ object TimeUtils {
     }
 }
 
-fun Date.isSameDay(calendar: Calendar, secondDate: Date): Boolean {
-    val backupTime = calendar.time //need backup time because the calendar is changed time, and we want to keep it as it came
-    calendar.time = this
-
-    val year = calendar.get(Calendar.YEAR)
-    val month = calendar.get(Calendar.MONTH)
-    val date = calendar.get(Calendar.DATE)
-
-    calendar.time = secondDate
-    val secondYear = calendar.get(Calendar.YEAR)
-    val secondMonth = calendar.get(Calendar.MONTH)
-    val secondDay = calendar.get(Calendar.DATE)
-
-    calendar.time = backupTime
-
-    if (year == secondYear && month == secondMonth && date == secondDay) return true
-
-    return false
-}
+//fun Date.isSameDay(calendar: Calendar, secondDate: Date): Boolean {
+//    val backupTime = calendar.time //need backup time because the calendar is changed time, and we want to keep it as it came
+//    calendar.time = this
+//
+//    val year = calendar.get(Calendar.YEAR)
+//    val month = calendar.get(Calendar.MONTH)
+//    val date = calendar.get(Calendar.DATE)
+//
+//    calendar.time = secondDate
+//    val secondYear = calendar.get(Calendar.YEAR)
+//    val secondMonth = calendar.get(Calendar.MONTH)
+//    val secondDay = calendar.get(Calendar.DATE)
+//
+//    calendar.time = backupTime
+//
+//    if (year == secondYear && month == secondMonth && date == secondDay) return true
+//
+//    return false
+//}
