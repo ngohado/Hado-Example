@@ -9,7 +9,7 @@ import kotlin.collections.ArrayList
  * Created by DoanNH on 8/1/2017.
  */
 object TimeUtils {
-    fun getWeekSinceJulianDay(firstWeekMonday: Boolean = true, calendar: Calendar): Int = getWeeksSinceEpochFromJulianDay(getJulianDay(calendar), if (firstWeekMonday) 1 else 0)
+    fun getWeekSinceJulianDay(firstDayOfWeek: Int, calendar: Calendar): Int = getWeeksSinceEpochFromJulianDay(getJulianDay(calendar), firstDayOfWeek)
 
     fun getDaysOfWeek(week: Int, currentWeek: Int, firstDayOfWeek: Int, calendar: Calendar): ArrayList<Date> {
         val backupTime = calendar.time //need backup time because the calendar is changed time, and we want to keep it as it came
@@ -27,23 +27,25 @@ object TimeUtils {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
 
+        if (betweenNumber == 0) {
+            println("Current week: $currentWeek \nFirst day: ${daysOfWeek[0]} \nToday: $backupTime")
+        }
+
         calendar.time = backupTime
         return daysOfWeek
     }
 
     fun getJulianDay(calendar: Calendar): Int {
-        val backupTime = calendar.time //need backup time because the calendar is changed time, and we want to keep it as it came
 
         val month = calendar.get(Calendar.MONTH) + 1
         val a = (14 - month) / 12
         val y = calendar.get(Calendar.YEAR) + 4800 - a
         val m = month + 12 * a - 3
 
-        calendar.time = backupTime
         return calendar.get(Calendar.DATE) + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045
     }
 
-    fun getWeeksSinceEpochFromJulianDay(julianDay: Int, firstDayOfWeek: Int): Int {
+    private fun getWeeksSinceEpochFromJulianDay(julianDay: Int, firstDayOfWeek: Int): Int {
         var diff = Time.THURSDAY - firstDayOfWeek
         if (diff < 0) {
             diff += 7

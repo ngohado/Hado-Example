@@ -15,20 +15,20 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
     val calendar: Calendar = Calendar.getInstance()
 
     // The day to highlight as selected
-    var mSelectedDate: Date = Calendar.getInstance().time
+    private var mSelectedDate: Date
+    private var mTodayNumber: Int
 
     // The week since 1970 that the selected day is in
-    var mSelectedWeek: Int = 0
-    var mCurrentWeek: Int = 0
+    private var mSelectedWeek: Int = 0
+    private var mCurrentWeek: Int = 0
 
     //0: Sunday, 1: Monday
-    var mFirstDayOfWeek: Int = 0
-
-
+    private var mFirstDayOfWeek: Int = 0
 
     init {
-        calendar.firstDayOfWeek = if (mFirstDayOfWeek == 0) Calendar.SUNDAY else Calendar.MONDAY
         updateParams(params)
+        mSelectedDate = calendar.time
+        mTodayNumber = calendar.get(Calendar.DAY_OF_WEEK) - 1
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SimpleWeekViewHolder {
@@ -56,11 +56,12 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK_START, mFirstDayOfWeek)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK, position)
         drawingParams.put(SimpleWeekView.VIEW_PARAMS_CURRENT_WEEK, mCurrentWeek)
+        drawingParams.put(SimpleWeekView.VIEW_PARAMS_TODAY_NUMBER, mTodayNumber)
 
         holder.setDrawingParams(drawingParams, calendar.timeZone.displayName)
     }
 
-    fun selectDate(week: Int, date: Date) {
+    private fun selectDate(week: Int, date: Date) {
         val weekSelectedOld = mSelectedWeek
         mSelectedWeek = week
         mSelectedDate = date
@@ -88,13 +89,7 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
             mFirstDayOfWeek = params[WEEK_PARAMS_WEEK_START]!!
         }
 
-        if (params.containsKey(WEEK_PARAMS_SHOW_WEEK)) {
-            mSelectedWeek = params[WEEK_PARAMS_SHOW_WEEK]!!
-        } else {
-            mSelectedWeek = mCurrentWeek
-        }
-
-        refresh()
+        mSelectedWeek = if (params.containsKey(WEEK_PARAMS_SHOW_WEEK)) params[WEEK_PARAMS_SHOW_WEEK]!! else mCurrentWeek
     }
 
     private fun refresh() {
@@ -102,10 +97,6 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
     }
 
     companion object {
-        /**
-         * Which month should be in focus currently.
-         */
-        val WEEK_PARAMS_FOCUS_MONTH = "focus_month"
         /**
          * Whether the week number should be shown. Non-zero to show them.
          */

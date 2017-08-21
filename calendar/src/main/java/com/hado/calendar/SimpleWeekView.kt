@@ -60,7 +60,7 @@ class SimpleWeekView(context: Context) : View(context) {
     // Which day is selected [0-6] or -1 if no day is selected
     private var mSelectedDay: Int = DEFAULT_SELECTED_DAY
     // Which day is today [0-6] or -1 if no day is today
-    private var mToday: Int = DEFAULT_SELECTED_DAY
+    private var mTodayPosition: Int = DEFAULT_SELECTED_DAY
     // Which day of the week to start on [0-6]
     private var mWeekStart: Int = DEFAULT_WEEK_START
     // The number of days + a spot for week number if it is displayed
@@ -129,23 +129,23 @@ class SimpleWeekView(context: Context) : View(context) {
 
         // Allocate space for caching the day numbers and focus values
         mDayNumbers = Array(mNumCells, { "" })
-        if (!params.containsKey(VIEW_PARAMS_WEEK)) {
+        if (params.containsKey(VIEW_PARAMS_WEEK)) {
+            mWeek = params[VIEW_PARAMS_WEEK]!!
+        } else {
             throw InvalidParameterException("You must specify the week number for this view")
         }
-        mWeek = params[VIEW_PARAMS_WEEK]!!
 
         if (params.containsKey(VIEW_PARAMS_WEEK_START)) {
             mWeekStart = params[VIEW_PARAMS_WEEK_START]!!
         }
         val daysOfWeek = TimeUtils.getDaysOfWeek(mWeek, mCurrentWeek, mWeekStart, calendar)
 
-        mToday = -1
-        val calendar = Calendar.getInstance()
-        for (i in 0 until mNumCells) {
-            if (calendar.time.isSameDay(calendar, daysOfWeek[i])) {
-                mToday = i
-            }
+        mTodayPosition = -1
+        if (mWeek == mCurrentWeek) {
+            mTodayPosition = getDayPosition(params[VIEW_PARAMS_TODAY_NUMBER]!!)
+        }
 
+        for (i in 0 until mNumCells) {
             mDayNumbers[i] = TimeUtils.getDateNumber(calendar, daysOfWeek[i])
         }
         updateSelectionPositions()
@@ -205,7 +205,7 @@ class SimpleWeekView(context: Context) : View(context) {
             when {
                 mWeek < mCurrentWeek -> mDayNumberPaint.color = mPastDayColor
                 mWeek > mCurrentWeek -> mDayNumberPaint.color = mFutureDayColor
-                mWeek == mCurrentWeek && i >= mToday -> if (mToday == i) {
+                mWeek == mCurrentWeek && i >= mTodayPosition -> if (mTodayPosition == i) {
                     mDayNumberPaint.color = mTodayColor
                 } else {
                     mDayNumberPaint.color = mFutureDayColor
@@ -230,7 +230,7 @@ class SimpleWeekView(context: Context) : View(context) {
             when {
                 mWeek < mCurrentWeek -> mDayNumberPaint.alpha = 255 / 2
                 mWeek > mCurrentWeek -> mDayNumberPaint.alpha = 255
-                mWeek == mCurrentWeek && i >= mToday -> mDayNumberPaint.alpha = 255
+                mWeek == mCurrentWeek && i >= mTodayPosition -> mDayNumberPaint.alpha = 255
                 else -> mDayNumberPaint.alpha = 255 / 2 //else that mean: this view is current week and the day at "i" index is past day
             }
 
@@ -247,7 +247,7 @@ class SimpleWeekView(context: Context) : View(context) {
     }
 
     private fun drawCurrentDayBackground(canvas: Canvas) {
-        if (mToday != -1) {
+        if (mTodayPosition != -1) {
             canvas.drawRect(mCurrentDayRect, mCurrentDayPaint)
         }
     }
@@ -300,10 +300,7 @@ class SimpleWeekView(context: Context) : View(context) {
      */
     private fun updateSelectionPositions() {
         if (mHasSelectedDay) {
-            var selectedPosition = mSelectedDay - mWeekStart
-            if (selectedPosition < 0) {
-                selectedPosition += 7
-            }
+            val selectedPosition = getDayPosition(mSelectedDay)
             val selectedLeft = selectedPosition * mWidth / mNumCells
             val selectedRight = (selectedPosition + 1) * mWidth / mNumCells
             mSelectedDayRect.top = 1
@@ -317,8 +314,8 @@ class SimpleWeekView(context: Context) : View(context) {
      * This calculates the positions for the current day lines.
      */
     private fun updateCurrentDayPositions() {
-        if (mToday != -1) {
-            var currentDayPosition = mToday
+        if (mTodayPosition != -1) {
+            var currentDayPosition = mTodayPosition
             if (currentDayPosition < 0) {
                 currentDayPosition += 7
             }
@@ -329,6 +326,12 @@ class SimpleWeekView(context: Context) : View(context) {
             mCurrentDayRect.left = currentDayLeft + 1
             mCurrentDayRect.right = currentDayRight - 1
         }
+    }
+
+    private fun getDayPosition(dayNumber: Int): Int {
+        var position = dayNumber - mWeekStart
+        if (position < 0) position +=7
+        return position
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -372,6 +375,8 @@ class SimpleWeekView(context: Context) : View(context) {
         val VIEW_PARAMS_WEEK = "week"
 
         val VIEW_PARAMS_CURRENT_WEEK = "current_week"
+
+        val VIEW_PARAMS_TODAY_NUMBER = "today_number"
 
         /**
          * This sets one of the days in this view as selected [Time.SUNDAY]
