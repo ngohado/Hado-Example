@@ -33,48 +33,45 @@ class SimpleWeekView(context: Context) : View(context) {
 
     var selectDayListener: ((week: Int, date: Date) -> Unit)? = null
 
-    // affects the padding on the sides of this view
-    var mPadding = 0
-
-    var mSelectedDayRect = Rect()
-    var mCurrentDayRect = Rect()
-    var mSelectedDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    var mCurrentDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    var mDayNumberPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
-    var mSeparatorVerticalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    var mSeparatorMonthPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var mSelectedDayRect = Rect()
+    private var mCurrentDayRect = Rect()
+    private var mSelectedDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var mCurrentDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var mDayNumberPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+    private var mSeparatorVerticalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var mSeparatorMonthPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     // Cache the number strings so we don't have to recompute them each time
-    lateinit var mDayNumbers: Array<String>
+    private lateinit var mDayNumbers: Array<String>
 
     // The position week of this view
-    var mWeek = -1
+    private var mWeek = -1
     // The number of current week, that mean NOW
-    var mCurrentWeek = -1
+    private var mCurrentWeek = -1
     //The margin distance top and left between day's number and day's bounder
-    var mDayNumberMargin = DEFAULT_DAY_NUMBER_MARGIN
+    private var mDayNumberMargin = DEFAULT_DAY_NUMBER_MARGIN
     // Quick reference to the width of this view, matches parent
-    var mWidth: Int = 0
-    var mCellWidth: Int = 0
+    private var mWidth: Int = 0
+    private var mCellWidth: Int = 0
     // The height this view should draw at in pixels, set by height param
-    var mHeight: Int = DEFAULT_HEIGHT
+    private var mHeight: Int = DEFAULT_HEIGHT
     // If this view contains the selected day
-    var mHasSelectedDay: Boolean = false
+    private var mHasSelectedDay: Boolean = false
     // Which day is selected [0-6] or -1 if no day is selected
-    var mSelectedDay: Int = DEFAULT_SELECTED_DAY
+    private var mSelectedDay: Int = DEFAULT_SELECTED_DAY
     // Which day is today [0-6] or -1 if no day is today
-    var mToday: Int = DEFAULT_SELECTED_DAY
+    private var mToday: Int = DEFAULT_SELECTED_DAY
     // Which day of the week to start on [0-6]
-    var mWeekStart: Int = DEFAULT_WEEK_START
+    private var mWeekStart: Int = DEFAULT_WEEK_START
     // The number of days + a spot for week number if it is displayed
-    var mNumCells: Int = DEFAULT_NUM_DAYS
+    private var mNumCells: Int = DEFAULT_NUM_DAYS
 
-    var mSeparatorMonthPath: Path = Path()
+    private var mSeparatorMonthPath: Path = Path()
 
-    var mFutureDayColor: Int = 0
-    var mTodayColor: Int = 0
-    var mPastDayColor: Int = 0
-    var mSelectedDayColor: Int = 0
+    private var mFutureDayColor: Int = 0
+    private var mTodayColor: Int = 0
+    private var mPastDayColor: Int = 0
+    private var mSelectedDayColor: Int = 0
 
     init {
         //Use to apply effect line dashed
@@ -190,13 +187,8 @@ class SimpleWeekView(context: Context) : View(context) {
      * * in a day
      */
     private fun getDayFromLocation(x: Float): Date? {
-        val dayStart = mPadding
-        if (x < dayStart || x > mWidth - mPadding) {
-            return null
-        }
-
-        // Selection is (x - start) / (pixels/day) == (x -s) * day / pixels
-        val dayPosition = ((x - dayStart) * mNumCells / (mWidth - dayStart - mPadding)).toInt()
+        // Selection is (x) / (pixels/day) == (x -s) * day / pixels
+        val dayPosition = (x * mNumCells / mWidth).toInt()
         return TimeUtils.getDaysOfWeek(mWeek, mCurrentWeek, mWeekStart, calendar)[dayPosition]
     }
 
@@ -284,7 +276,7 @@ class SimpleWeekView(context: Context) : View(context) {
         mSeparatorMonthPath.reset()
         val halfStrokeWidth = mSeparatorMonthPaint.strokeWidth / 2
         //because the text of first day of month is eg: "Aug 1", the length is always larger than 2
-        val firstDayOfMonthNumber: Int =  mDayNumbers.indexOfFirst { dayNumberString ->
+        val firstDayOfMonthNumber: Int = mDayNumbers.indexOfFirst { dayNumberString ->
             dayNumberString.length > 2
         }
 
@@ -312,8 +304,8 @@ class SimpleWeekView(context: Context) : View(context) {
             if (selectedPosition < 0) {
                 selectedPosition += 7
             }
-            val selectedLeft = selectedPosition * (mWidth - mPadding * 2) / mNumCells + mPadding
-            val selectedRight = (selectedPosition + 1) * (mWidth - mPadding * 2) / mNumCells + mPadding
+            val selectedLeft = selectedPosition * mWidth / mNumCells
+            val selectedRight = (selectedPosition + 1) * mWidth / mNumCells
             mSelectedDayRect.top = 1
             mSelectedDayRect.bottom = mHeight - 1
             mSelectedDayRect.left = selectedLeft + 1
@@ -330,8 +322,8 @@ class SimpleWeekView(context: Context) : View(context) {
             if (currentDayPosition < 0) {
                 currentDayPosition += 7
             }
-            val currentDayLeft = currentDayPosition * (mWidth - mPadding * 2) / mNumCells + mPadding
-            val currentDayRight = (currentDayPosition + 1) * (mWidth - mPadding * 2) / mNumCells + mPadding
+            val currentDayLeft = currentDayPosition * mWidth / mNumCells
+            val currentDayRight = (currentDayPosition + 1) * mWidth / mNumCells
             mCurrentDayRect.top = 1
             mCurrentDayRect.bottom = mHeight - 1
             mCurrentDayRect.left = currentDayLeft + 1
@@ -343,8 +335,7 @@ class SimpleWeekView(context: Context) : View(context) {
         setMeasuredDimension(View.MeasureSpec.getSize(widthMeasureSpec), mHeight)
     }
 
-    var clickDownTime: Long = 0L
-
+    private var clickDownTime: Long = 0L
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
