@@ -50,7 +50,6 @@ class SimpleWeekView(context: Context) : View(context) {
     private var mCellWidth: Int = 0
     // The height this view should draw at in pixels, set by height param
     private var mHeight: Int = DEFAULT_HEIGHT
-        get() = (field * mScale).toInt()
     // If this view contains the selected day
     private var mHasSelectedDay: Boolean = false
     // Which day is selected [0-6] or -1 if no day is selected
@@ -65,13 +64,13 @@ class SimpleWeekView(context: Context) : View(context) {
     private var padding: Int = DEFAULT_PADDING
         get() = (field * mScale).toInt()
 
-    private var paddingEvent: Int  = DEFAULT_EVENT_PADDING
+    private var paddingEvent: Int = DEFAULT_EVENT_PADDING
         get() = (field * mScale).toInt()
 
-    var eventShowNumber: Int = DEFAULT_EVENT_SHOW_NUMBER
+    private var eventShowNumber: Int = DEFAULT_EVENT_SHOW_NUMBER
 
-    var textHeight: Int = 0
-    var textSize: Float = DEFAULT_TEXT_SIZE
+    private var textHeight: Int = 0
+    private var textSize: Float = DEFAULT_TEXT_SIZE
         get() = field * mScale
 
     private var mSeparatorMonthPath: Path = Path()
@@ -91,9 +90,6 @@ class SimpleWeekView(context: Context) : View(context) {
         mSelectedDayColor = Color.parseColor("#5C5953")
 
         mScale = context.resources.displayMetrics.density
-
-        // Sets up any standard paints that will be used
-        initView()
     }
 
     /**
@@ -131,19 +127,37 @@ class SimpleWeekView(context: Context) : View(context) {
         if (params.containsKey(VIEW_PARAMS_WEEK_START)) {
             mWeekStart = params[VIEW_PARAMS_WEEK_START]!!
         }
-        val daysOfWeek = TimeUtils.getDaysOfWeek(mWeek, mCurrentWeek, mWeekStart)
+        val daysOfWeek: ArrayList<Date> = TimeUtils.getDaysOfWeek(mWeek, mCurrentWeek, mWeekStart)
+        for (i in 0 until daysOfWeek.size) {
+            mDayNumbers[i] = TimeUtils.getDateNumber(Calendar.getInstance(), daysOfWeek[i])
+        }
 
         mTodayPosition = -1
         if (mWeek == mCurrentWeek) {
             mTodayPosition = getDayPosition(params[VIEW_PARAMS_TODAY_NUMBER]!!)
         }
 
-        for (i in 0 until mNumCells) {
-            mDayNumbers[i] = TimeUtils.getDateNumber(Calendar.getInstance(), daysOfWeek[i])
+        if (params.containsKey(VIEW_PARAMS_EVEN_SHOW_NUMBER)) {
+            eventShowNumber = params[VIEW_PARAMS_EVEN_SHOW_NUMBER]!!
         }
+
+        if (params.containsKey(VIEW_PARAMS_TEXT_SIZE)) {
+            textSize = params[VIEW_PARAMS_TEXT_SIZE]!!.toFloat()
+        }
+
+        textHeight = getTextHeight(textSize)
+
+        mHeight = calculateHeight(eventShowNumber, textHeight)
+
+        initView()
         updateSelectionPositions()
         updateCurrentDayPositions()
         updateSeparatorMonth()
+    }
+
+    private fun calculateHeight(showNumber: Int, tHeight: Int): Int {
+        val h = padding * 3.5f + textHeight + showNumber * (tHeight + 2 * paddingEvent)
+        return h.toInt()
     }
 
     /**
@@ -169,7 +183,6 @@ class SimpleWeekView(context: Context) : View(context) {
 
         mDayNumberPaint.textSize = textSize
         mDayNumberPaint.style = Style.FILL
-        textHeight = getTextHeight(textSize)
     }
 
     /**
@@ -228,9 +241,9 @@ class SimpleWeekView(context: Context) : View(context) {
                 else -> mDayNumberPaint.alpha = 255 / 2 //else that mean: this view is current week and the day at "i" index is past day
             }
 
-            val y = textHeight + padding
+            val y = textHeight + padding * 1.5f
             val x = i * mCellWidth + padding
-            canvas.drawText(mDayNumbers[i], x.toFloat(), y.toFloat(), mDayNumberPaint)
+            canvas.drawText(mDayNumbers[i], x.toFloat(), y, mDayNumberPaint)
 
             if (i == 0) continue
 
@@ -371,17 +384,13 @@ class SimpleWeekView(context: Context) : View(context) {
 
         val VIEW_PARAMS_TODAY_NUMBER = "today_number"
 
-        /**
-         * This sets one of the days in this view as selected [Time.SUNDAY]
-         * through [Time.SATURDAY].
-         */
         val VIEW_PARAMS_SELECTED_DAY = "selected_day"
 
-        /**
-         * Which day the week should start on. [Time.SUNDAY] through
-         * [Time.SATURDAY].
-         */
         val VIEW_PARAMS_WEEK_START = "week_start"
+
+        val VIEW_PARAMS_EVEN_SHOW_NUMBER = "even_show_number"
+
+        val VIEW_PARAMS_TEXT_SIZE = "text_size"
 
         val DEFAULT_EVENT_SHOW_NUMBER = 5
 
@@ -396,6 +405,10 @@ class SimpleWeekView(context: Context) : View(context) {
         val DEFAULT_EVENT_PADDING = 2
 
         val DEFAULT_TEXT_SIZE = 8f
+
+        val SUNDAY = 0
+
+        val MONDAY = 1
 
         fun getTextHeight(size: Float): Int {
             val paint = Paint()
