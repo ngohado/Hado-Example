@@ -295,8 +295,9 @@ class CalendarMonthView(context: Context) : View(context) {
      */
     private fun updateSelectionPositions() {
         if (mHasSelectedDay) {
-            val selectedLeft = mTodayPosition * mCellWidth
-            val selectedRight = (mTodayPosition + 1) * mCellWidth
+            val selectedPosition = getDayPosition(mSelectedDay)
+            val selectedLeft = selectedPosition * mCellWidth
+            val selectedRight = (selectedPosition + 1) * mCellWidth
             mSelectedDayRect.top = mSelectedDayPaint.strokeWidth.toInt()
             mSelectedDayRect.bottom = mHeight - mSelectedDayPaint.strokeWidth.toInt()
             mSelectedDayRect.left = selectedLeft
