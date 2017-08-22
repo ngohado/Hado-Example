@@ -22,8 +22,11 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
     private var mSelectedWeek: Int = 0
     private var mCurrentWeek: Int = 0
 
-    //0: Sunday, 1: Monday
-    private var mFirstDayOfWeek: Int = 0
+    private var mFirstDayOfWeek: Int = CalendarMonthView.SUNDAY
+
+    private var mTextSize: Int = -1
+
+    private var mShowNumber: Int = -1
 
     init {
         updateParams(params)
@@ -56,8 +59,8 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
         drawingParams.put(CalendarMonthView.VIEW_PARAMS_WEEK_START, mFirstDayOfWeek)
         drawingParams.put(CalendarMonthView.VIEW_PARAMS_SELECTED_DAY, selectedDay)
         drawingParams.put(CalendarMonthView.VIEW_PARAMS_TODAY_NUMBER, mTodayNumber)
-        drawingParams.put(CalendarMonthView.VIEW_PARAMS_TEXT_SIZE, 10)
-        drawingParams.put(CalendarMonthView.VIEW_PARAMS_EVEN_SHOW_NUMBER, 5)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_TEXT_SIZE, mTextSize)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_EVENT_SHOW_NUMBER, mShowNumber)
 
         holder.setDrawingParams(drawingParams, calendar.timeZone.displayName)
     }
@@ -90,6 +93,14 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
             mFirstDayOfWeek = params[WEEK_PARAMS_WEEK_START]!!
         }
 
+        if (params.containsKey(WEEK_PARAMS_EVENT_SHOW_NUMBER)) {
+            mShowNumber = params[WEEK_PARAMS_EVENT_SHOW_NUMBER]!!
+        }
+
+        if (params.containsKey(WEEK_PARAMS_TEXT_SIZE)) {
+            mTextSize = params[WEEK_PARAMS_TEXT_SIZE]!!
+        }
+
         mSelectedWeek = if (params.containsKey(WEEK_PARAMS_SHOW_WEEK)) params[WEEK_PARAMS_SHOW_WEEK]!! else mCurrentWeek
     }
 
@@ -117,6 +128,9 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
          */
         val WEEK_PARAMS_JULIAN_DAY = "selected_day"
 
+        val WEEK_PARAMS_EVENT_SHOW_NUMBER = "event_show_number"
+
+        val WEEK_PARAMS_TEXT_SIZE = "text_size"
 
         private val WEEK_COUNT = 3497
 

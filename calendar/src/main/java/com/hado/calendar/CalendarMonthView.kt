@@ -35,7 +35,7 @@ class CalendarMonthView(context: Context) : View(context) {
     private var mSelectedDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var mCurrentDayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var mDayNumberPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
-    private var mSeparatorVerticalPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var mDashedSeparatorPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var mSeparatorMonthPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     // Cache the number strings so we don't have to recompute them each time
@@ -85,11 +85,11 @@ class CalendarMonthView(context: Context) : View(context) {
     init {
         //Use to apply effect line dashed
         setLayerType(View.LAYER_TYPE_SOFTWARE, mSelectedDayPaint)
-        mTodayColor = Color.parseColor("#F18D00")
+        mTodayColor = ContextCompat.getColor(context, R.color.today_number)
         mNormalDayColor = ContextCompat.getColor(context, R.color.normal_day_number)
-        mSaturdayColor= ContextCompat.getColor(context, R.color.saturday_day_number)
-        mSundayColor = ContextCompat.getColor(context, R.color.sunday_day_number)
-        mSelectedDayColor = Color.parseColor("#5C5953")
+        mSaturdayColor = ContextCompat.getColor(context, R.color.saturday_number)
+        mSundayColor = ContextCompat.getColor(context, R.color.sunday_number)
+        mSelectedDayColor = ContextCompat.getColor(context, R.color.selected_day)
 
         mScale = context.resources.displayMetrics.density
     }
@@ -129,8 +129,8 @@ class CalendarMonthView(context: Context) : View(context) {
             mTodayPosition = getDayPosition(params[VIEW_PARAMS_TODAY_NUMBER]!!)
         }
 
-        if (params.containsKey(VIEW_PARAMS_EVEN_SHOW_NUMBER)) {
-            eventShowNumber = params[VIEW_PARAMS_EVEN_SHOW_NUMBER]!!
+        if (params.containsKey(VIEW_PARAMS_EVENT_SHOW_NUMBER)) {
+            eventShowNumber = params[VIEW_PARAMS_EVENT_SHOW_NUMBER]!!
         }
 
         if (params.containsKey(VIEW_PARAMS_TEXT_SIZE)) {
@@ -164,10 +164,10 @@ class CalendarMonthView(context: Context) : View(context) {
         mCurrentDayPaint.style = Style.FILL
         mCurrentDayPaint.color = Color.parseColor("#FFFEC4")
 
-        mSeparatorVerticalPaint.style = Style.STROKE
-        mSeparatorVerticalPaint.strokeWidth = 1f * mScale
-        mSeparatorVerticalPaint.pathEffect = DashPathEffect(floatArrayOf(7f, 7f), 0f)
-        mSeparatorVerticalPaint.color = Color.parseColor("#cccccc")
+        mDashedSeparatorPaint.style = Style.STROKE
+        mDashedSeparatorPaint.strokeWidth = 1f * mScale
+        mDashedSeparatorPaint.pathEffect = DashPathEffect(floatArrayOf(7f, 7f), 0f)
+        mDashedSeparatorPaint.color = Color.parseColor("#cccccc")
 
         mSeparatorMonthPaint.style = Style.STROKE
         mSeparatorMonthPaint.strokeWidth = 1f * mScale
@@ -198,43 +198,48 @@ class CalendarMonthView(context: Context) : View(context) {
 
 
     private fun drawDayNumber(canvas: Canvas) {
-        for (i in 0 until mNumCells) {
+        for (position in 0 until mNumCells) {
             mDayNumberPaint.color = mNormalDayColor
 
             //define color of weekend day number
             when (mWeekStart) {
                 SUNDAY -> { //start with sunday
-                    if (i == mNumCells - 1) mDayNumberPaint.color = mSaturdayColor
-                    else if (i == 0) mDayNumberPaint.color = mSundayColor
+                    if (position == mNumCells - 1) mDayNumberPaint.color = mSaturdayColor
+                    else if (position == 0) mDayNumberPaint.color = mSundayColor
                 }
 
                 MONDAY -> { //start with monday
-                    if (i == mNumCells - 2) mDayNumberPaint.color = mSaturdayColor
-                    else if (i == mNumCells - 1) mDayNumberPaint.color = mSundayColor
+                    if (position == mNumCells - 2) mDayNumberPaint.color = mSaturdayColor
+                    else if (position == mNumCells - 1) mDayNumberPaint.color = mSundayColor
                 }
             }
 
             //define color of today number
-            if (i == mTodayPosition) mDayNumberPaint.color = mTodayColor
+            if (position == mTodayPosition) mDayNumberPaint.color = mTodayColor
 
             //define alpha of paint depend on past day and future day
             when {
                 mWeek < mCurrentWeek -> mDayNumberPaint.alpha = 255 / 2
                 mWeek > mCurrentWeek -> mDayNumberPaint.alpha = 255
-                mWeek == mCurrentWeek && i >= mTodayPosition -> mDayNumberPaint.alpha = 255
+                mWeek == mCurrentWeek && position >= mTodayPosition -> mDayNumberPaint.alpha = 255
                 else -> mDayNumberPaint.alpha = 255 / 2 //else that mean: this view is current week and the day at "i" index is past day
             }
 
             val y = textHeight + padding * 1.5f
-            val x = i * mCellWidth + padding
-            canvas.drawText(mDayNumbers[i], x.toFloat(), y, mDayNumberPaint)
+            val x = position * mCellWidth + padding
+            canvas.drawText(mDayNumbers[position], x.toFloat(), y, mDayNumberPaint)
 
-            if (i == 0) continue
-
-            canvas.drawLine((i * mCellWidth).toFloat(), 0f, (i * (mCellWidth)).toFloat(), mHeight.toFloat(), mSeparatorVerticalPaint)
+            if (position > 0) { //draw vertical separator between two days
+                canvas.drawLine(position * mCellWidth.toFloat(), 0f, position * mCellWidth.toFloat(), mHeight.toFloat(), mDashedSeparatorPaint)
+            }
         }
-        canvas.drawPath(mSeparatorMonthPath, mSeparatorMonthPaint)
-        canvas.drawLine(0f, mHeight.toFloat(), width.toFloat(), mHeight.toFloat(), mSeparatorVerticalPaint)
+
+        if (!mSeparatorMonthPath.isEmpty) { //draw separator between two months
+            canvas.drawPath(mSeparatorMonthPath, mSeparatorMonthPaint)
+        }
+
+        //draw horizontal separator between two weeks
+        canvas.drawLine(0f, mHeight.toFloat(), mWidth.toFloat(), mHeight.toFloat(), mDashedSeparatorPaint)
     }
 
     private fun drawCurrentDayBackground(canvas: Canvas) {
@@ -249,10 +254,10 @@ class CalendarMonthView(context: Context) : View(context) {
         }
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldWidth: Int, oldHeight: Int) {
-        if (mWidth == w) return
+    override fun onSizeChanged(width: Int, h: Int, oldWidth: Int, oldHeight: Int) {
+        if (mWidth == width) return
 
-        mWidth = w
+        mWidth = width
         mCellWidth = mWidth / mNumCells
         updateSelectionPositions()
         updateCurrentDayPositions()
@@ -274,13 +279,13 @@ class CalendarMonthView(context: Context) : View(context) {
         if (firstDayOfMonthNumber == -1) return
 
         mSeparatorMonthPath.moveTo(0f, if (firstDayOfMonthNumber == 0) halfStrokeWidth else (mHeight - halfStrokeWidth * 2))
-        for (i in 0 until mNumCells)
+        for (position in 0 until mNumCells)
             when {
-                i < firstDayOfMonthNumber -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), mHeight - halfStrokeWidth * 2)
-                i > firstDayOfMonthNumber -> mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
+                position < firstDayOfMonthNumber -> mSeparatorMonthPath.lineTo((position + 1) * mCellWidth.toFloat(), mHeight - halfStrokeWidth * 2)
+                position > firstDayOfMonthNumber -> mSeparatorMonthPath.lineTo((position + 1) * mCellWidth.toFloat(), halfStrokeWidth)
                 else -> { // i is first day of month number
-                    mSeparatorMonthPath.lineTo(i * mCellWidth.toFloat(), halfStrokeWidth)
-                    mSeparatorMonthPath.lineTo((i + 1) * mCellWidth.toFloat(), halfStrokeWidth)
+                    mSeparatorMonthPath.lineTo(position * mCellWidth.toFloat(), halfStrokeWidth)
+                    mSeparatorMonthPath.lineTo((position + 1) * mCellWidth.toFloat(), halfStrokeWidth)
                 }
             }
     }
@@ -290,10 +295,9 @@ class CalendarMonthView(context: Context) : View(context) {
      */
     private fun updateSelectionPositions() {
         if (mHasSelectedDay) {
-            val selectedPosition = getDayPosition(mSelectedDay)
-            val selectedLeft = selectedPosition * mCellWidth
-            val selectedRight = (selectedPosition + 1) * mCellWidth
-            mSelectedDayRect.top = (mSelectedDayPaint.strokeWidth / 2).toInt()
+            val selectedLeft = mTodayPosition * mCellWidth
+            val selectedRight = (mTodayPosition + 1) * mCellWidth
+            mSelectedDayRect.top = mSelectedDayPaint.strokeWidth.toInt()
             mSelectedDayRect.bottom = mHeight - mSelectedDayPaint.strokeWidth.toInt()
             mSelectedDayRect.left = selectedLeft
             mSelectedDayRect.right = selectedRight
@@ -305,16 +309,12 @@ class CalendarMonthView(context: Context) : View(context) {
      */
     private fun updateCurrentDayPositions() {
         if (mTodayPosition != -1) {
-            var currentDayPosition = mTodayPosition
-            if (currentDayPosition < 0) {
-                currentDayPosition += 7
-            }
-            val currentDayLeft = currentDayPosition * mWidth / mNumCells
-            val currentDayRight = (currentDayPosition + 1) * mWidth / mNumCells
-            mCurrentDayRect.top = 1
-            mCurrentDayRect.bottom = mHeight - 1
-            mCurrentDayRect.left = currentDayLeft + 1
-            mCurrentDayRect.right = currentDayRight - 1
+            val currentDayLeft = mTodayPosition * mCellWidth
+            val currentDayRight = (mTodayPosition + 1) * mCellWidth
+            mCurrentDayRect.top = 0
+            mCurrentDayRect.bottom = mHeight
+            mCurrentDayRect.left = currentDayLeft
+            mCurrentDayRect.right = currentDayRight
         }
     }
 
@@ -372,7 +372,7 @@ class CalendarMonthView(context: Context) : View(context) {
 
         val VIEW_PARAMS_WEEK_START = "week_start"
 
-        val VIEW_PARAMS_EVEN_SHOW_NUMBER = "even_show_number"
+        val VIEW_PARAMS_EVENT_SHOW_NUMBER = "even_show_number"
 
         val VIEW_PARAMS_TEXT_SIZE = "text_size"
 

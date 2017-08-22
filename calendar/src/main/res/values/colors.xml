@@ -147,6 +147,8 @@
     <color name="appwidget_when">#ffffffff</color>
     <color name="appwidget_where">#ffffffff</color>
     <color name="appwidget_no_events">#ffffffff</color>
-    <color name="saturday_day_number">#63A1E1</color>
-    <color name="sunday_day_number">#D94752</color>
+    <color name="saturday_number">#63A1E1</color>
+    <color name="sunday_number">#D94752</color>
+    <color name="today_number">#F18D00</color>
+    <color name="selected_day">#5C5953</color>
 </resources>
