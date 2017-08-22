@@ -32,7 +32,7 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SimpleWeekViewHolder {
-        val view = SimpleWeekView(parent.context)
+        val view = CalendarMonthView(parent.context)
         val params = AbsListView.LayoutParams(
                 AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.MATCH_PARENT)
         view.layoutParams = params
@@ -51,13 +51,13 @@ class WeeksAdapter(params: HashMap<String, Int>) : RecyclerView.Adapter<SimpleWe
             selectedDay = calendar.get(Calendar.DAY_OF_WEEK) - 1
         }
 
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK, position)
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_CURRENT_WEEK, mCurrentWeek)
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_WEEK_START, mFirstDayOfWeek)
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_SELECTED_DAY, selectedDay)
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_TODAY_NUMBER, mTodayNumber)
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_TEXT_SIZE, 15)
-        drawingParams.put(SimpleWeekView.VIEW_PARAMS_EVEN_SHOW_NUMBER, 10)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_WEEK, position)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_CURRENT_WEEK, mCurrentWeek)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_WEEK_START, mFirstDayOfWeek)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_SELECTED_DAY, selectedDay)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_TODAY_NUMBER, mTodayNumber)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_TEXT_SIZE, 10)
+        drawingParams.put(CalendarMonthView.VIEW_PARAMS_EVEN_SHOW_NUMBER, 5)
 
         holder.setDrawingParams(drawingParams, calendar.timeZone.displayName)
     }

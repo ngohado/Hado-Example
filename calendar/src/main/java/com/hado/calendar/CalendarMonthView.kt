@@ -27,7 +27,7 @@ import java.security.InvalidParameterException
 import java.util.*
 
 
-class SimpleWeekView(context: Context) : View(context) {
+class CalendarMonthView(context: Context) : View(context) {
     var selectDayListener: ((week: Int, date: Date) -> Unit)? = null
 
     private var mSelectedDayRect = Rect()
@@ -75,9 +75,10 @@ class SimpleWeekView(context: Context) : View(context) {
 
     private var mSeparatorMonthPath: Path = Path()
 
-    private var mFutureDayColor: Int = 0
+    private var mNormalDayColor: Int = 0
     private var mTodayColor: Int = 0
-    private var mPastDayColor: Int = 0
+    private var mSaturdayColor: Int = 0
+    private var mSundayColor: Int = 0
     private var mSelectedDayColor: Int = 0
     private var mScale = 0f
 
@@ -85,23 +86,14 @@ class SimpleWeekView(context: Context) : View(context) {
         //Use to apply effect line dashed
         setLayerType(View.LAYER_TYPE_SOFTWARE, mSelectedDayPaint)
         mTodayColor = Color.parseColor("#F18D00")
-        mFutureDayColor = ContextCompat.getColor(context, R.color.month_mini_day_number)
-        mPastDayColor = ContextCompat.getColor(context, R.color.month_other_month_day_number)
+        mNormalDayColor = ContextCompat.getColor(context, R.color.normal_day_number)
+        mSaturdayColor= ContextCompat.getColor(context, R.color.saturday_day_number)
+        mSundayColor = ContextCompat.getColor(context, R.color.sunday_day_number)
         mSelectedDayColor = Color.parseColor("#5C5953")
 
         mScale = context.resources.displayMetrics.density
     }
 
-    /**
-     * Sets all the parameters for displaying this week. The only required
-     * parameter is the week number. Other parameters have a default value and
-     * will only update if a new value is included, except for focus month,
-     * which will always default to no focus month if no value is passed in. See
-     * [.VIEW_PARAMS_HEIGHT] for more info on parameters.
-     * @param params A map of the new parameters, see
-     * *               [.VIEW_PARAMS_HEIGHT]
-     * *
-     */
     fun setWeekParams(params: HashMap<String, Int>) {
         if (!params.containsKey(VIEW_PARAMS_WEEK)) {
             throw InvalidParameterException("You must specify the week number for this view")
@@ -156,7 +148,7 @@ class SimpleWeekView(context: Context) : View(context) {
     }
 
     private fun calculateHeight(showNumber: Int, tHeight: Int): Int {
-        val h = padding * 3.5f + textHeight + showNumber * (tHeight + 2 * paddingEvent)
+        val h = padding * 3.5f + tHeight + showNumber * (tHeight + 2 * paddingEvent)
         return h.toInt()
     }
 
@@ -165,7 +157,7 @@ class SimpleWeekView(context: Context) : View(context) {
      * want to use a different paint.
      */
     private fun initView() {
-        mSelectedDayPaint.strokeWidth = 4f
+        mSelectedDayPaint.strokeWidth = 1f * mScale
         mSelectedDayPaint.style = Style.STROKE
         mSelectedDayPaint.color = mSelectedDayColor
 
@@ -178,7 +170,7 @@ class SimpleWeekView(context: Context) : View(context) {
         mSeparatorVerticalPaint.color = Color.parseColor("#cccccc")
 
         mSeparatorMonthPaint.style = Style.STROKE
-        mSeparatorMonthPaint.strokeWidth = 1 * mScale
+        mSeparatorMonthPaint.strokeWidth = 1f * mScale
         mSeparatorMonthPaint.color = Color.parseColor("#5C5953")
 
         mDayNumberPaint.textSize = textSize
@@ -189,8 +181,7 @@ class SimpleWeekView(context: Context) : View(context) {
      * Calculates the day that the given x position is in, accounting for week
      * number. Returns a Time referencing that day or null if
      * @param x The x position of the touch event
-     * *
-     * @return A time object for the tapped day or null if the position wasn't
+     * @return A Date object for the tapped day or null if the position wasn't
      * * in a day
      */
     private fun getDayFromLocation(x: Float): Date? {
@@ -208,30 +199,23 @@ class SimpleWeekView(context: Context) : View(context) {
 
     private fun drawDayNumber(canvas: Canvas) {
         for (i in 0 until mNumCells) {
-            //define color of past day and future day
-            when {
-                mWeek < mCurrentWeek -> mDayNumberPaint.color = mPastDayColor
-                mWeek > mCurrentWeek -> mDayNumberPaint.color = mFutureDayColor
-                mWeek == mCurrentWeek && i >= mTodayPosition -> if (mTodayPosition == i) {
-                    mDayNumberPaint.color = mTodayColor
-                } else {
-                    mDayNumberPaint.color = mFutureDayColor
-                }
-                else -> mDayNumberPaint.color = mPastDayColor //else that mean: this view is current week and the day at "i" index is past day
-            }
+            mDayNumberPaint.color = mNormalDayColor
 
-            //define color of weekend day
+            //define color of weekend day number
             when (mWeekStart) {
-                0 -> { //start with sunday
-                    if (i == mNumCells - 1) mDayNumberPaint.color = Color.BLUE
-                    if (i == 0) mDayNumberPaint.color = Color.RED
+                SUNDAY -> { //start with sunday
+                    if (i == mNumCells - 1) mDayNumberPaint.color = mSaturdayColor
+                    else if (i == 0) mDayNumberPaint.color = mSundayColor
                 }
 
-                1 -> { //start with monday
-                    if (i == mNumCells - 2) mDayNumberPaint.color = Color.BLUE
-                    if (i == mNumCells - 1) mDayNumberPaint.color = Color.RED
+                MONDAY -> { //start with monday
+                    if (i == mNumCells - 2) mDayNumberPaint.color = mSaturdayColor
+                    else if (i == mNumCells - 1) mDayNumberPaint.color = mSundayColor
                 }
             }
+
+            //define color of today number
+            if (i == mTodayPosition) mDayNumberPaint.color = mTodayColor
 
             //define alpha of paint depend on past day and future day
             when {
@@ -265,7 +249,7 @@ class SimpleWeekView(context: Context) : View(context) {
         }
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    override fun onSizeChanged(w: Int, h: Int, oldWidth: Int, oldHeight: Int) {
         if (mWidth == w) return
 
         mWidth = w
@@ -307,12 +291,12 @@ class SimpleWeekView(context: Context) : View(context) {
     private fun updateSelectionPositions() {
         if (mHasSelectedDay) {
             val selectedPosition = getDayPosition(mSelectedDay)
-            val selectedLeft = selectedPosition * mWidth / mNumCells
-            val selectedRight = (selectedPosition + 1) * mWidth / mNumCells
-            mSelectedDayRect.top = 1
-            mSelectedDayRect.bottom = mHeight - 1
-            mSelectedDayRect.left = selectedLeft + 1
-            mSelectedDayRect.right = selectedRight - 1
+            val selectedLeft = selectedPosition * mCellWidth
+            val selectedRight = (selectedPosition + 1) * mCellWidth
+            mSelectedDayRect.top = (mSelectedDayPaint.strokeWidth / 2).toInt()
+            mSelectedDayRect.bottom = mHeight - mSelectedDayPaint.strokeWidth.toInt()
+            mSelectedDayRect.left = selectedLeft
+            mSelectedDayRect.right = selectedRight
         }
     }
 
@@ -357,7 +341,7 @@ class SimpleWeekView(context: Context) : View(context) {
                     if (dateSelected != null) {
                         selectDayListener?.invoke(mWeek, dateSelected)
                         val calendar = Calendar.getInstance()
-                        calendar.firstDayOfWeek = if (mWeekStart == 0) Calendar.SUNDAY else Calendar.MONDAY
+                        calendar.firstDayOfWeek = if (mWeekStart == SUNDAY) Calendar.SUNDAY else Calendar.MONDAY
                         calendar.time = dateSelected
                         mHasSelectedDay = true
                         mSelectedDay = calendar.get(Calendar.DAY_OF_WEEK) - 1

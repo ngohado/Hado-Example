@@ -40,7 +40,7 @@
     <color name="mini_month_today_outline_color">#FF000000</color>
 
     <color name="month_day_number">#FF333333</color>
-    <color name="month_mini_day_number">#FF000000</color>
+    <color name="normal_day_number">#57534F</color>
     <color name="month_day_number_other">#FF999999</color>
     <color name="month_week_num_color">#FF999999</color>
     <color name="month_day_names_color">#FF999999</color>
@@ -52,7 +52,7 @@
     <color name="month_saturday">#80333333</color>
     <color name="month_sunday">#80333333</color>
     <color name="month_grid_lines">#ffCCCCCC</color>
-    <color name="month_other_month_day_number">#ff939497</color>
+    <color name="past_day_number">#ff939497</color>
 
 
 
@@ -147,4 +147,6 @@
     <color name="appwidget_when">#ffffffff</color>
     <color name="appwidget_where">#ffffffff</color>
     <color name="appwidget_no_events">#ffffffff</color>
+    <color name="saturday_day_number">#63A1E1</color>
+    <color name="sunday_day_number">#D94752</color>
 </resources>

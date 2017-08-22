@@ -18,10 +18,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ButterKnife.bind(this)
-        val currentWeek = TimeUtils.getWeekSinceJulianDay(1)
+        val currentWeek = TimeUtils.getWeekSinceJulianDay(CalendarMonthView.MONDAY)
         val weekParams = HashMap<String, Int>()
         weekParams.put(WeeksAdapter.WEEK_PARAMS_CURRENT_WEEK, currentWeek)
-        weekParams.put(WeeksAdapter.WEEK_PARAMS_WEEK_START, 1)
+        weekParams.put(WeeksAdapter.WEEK_PARAMS_WEEK_START, CalendarMonthView.MONDAY)
         adapter = WeeksAdapter(weekParams)
         rvCalendar.adapter = adapter
         rvCalendar.scrollToPosition(currentWeek)
