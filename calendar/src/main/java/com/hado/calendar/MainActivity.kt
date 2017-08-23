@@ -2,9 +2,11 @@ package com.hado.calendar
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
+import butterknife.OnClick
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -27,5 +29,13 @@ class MainActivity : AppCompatActivity() {
         adapter = WeeksAdapter(weekParams)
         rvCalendar.adapter = adapter
         rvCalendar.scrollToPosition(currentWeek)
+    }
+
+    @OnClick(R.id.btn_check)
+    fun check() {
+        val layoutManager = rvCalendar.layoutManager as LinearLayoutManager
+        val position = layoutManager.findFirstCompletelyVisibleItemPosition()
+        val view = layoutManager.findViewByPosition(position)
+        println("Top ${view.top}")
     }
 }
